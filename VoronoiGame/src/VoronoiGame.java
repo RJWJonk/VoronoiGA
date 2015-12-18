@@ -36,6 +36,7 @@ public class VoronoiGame extends JFrame {
 
     public static void main(String[] args) {
         new VoronoiGame();
+        //Test git commit
     }
 
     public VoronoiGame() {
