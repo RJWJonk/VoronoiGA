@@ -1,7 +1,9 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
-
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -28,6 +30,7 @@ public class GameBoard {
             stores.add(new Store(r.nextInt(10), r.nextInt(10), i % 2));
         }
         calculateTriangulation();
+        
 
         System.out.println("===Stores===");
         for (Store s : stores) {
@@ -57,6 +60,7 @@ public class GameBoard {
 
         ArrayList<Store> todo = (ArrayList<Store>) stores.clone();
 
+ 
         //Initialize first 3 points
         Store s1 = todo.get(0);
         Store s2 = todo.get(1);
@@ -76,9 +80,44 @@ public class GameBoard {
         e31.setNext(e12);
         e31.setPrevious(e23);
 
+       for (int i=4; i<=stores.size(); i++){
+        Store si = todo.get(i-1);
+            for (int j = i - 1; j > 0 ; j--) {
+                boolean intersect = false;
+                
+                Store sj = todo.get(j-1);
+                Edge eij = new Edge(si, sj);
+                
+                for (int k = 1; k < i-1; k++){
+                    
+                    for (int l = k+1; l <= i-1; l++){
+                    
+                        Store sk = todo.get(k-1);
+                        Store sl = todo.get(l-1);
+                        
+                        
+                        Line2D line1 = new Line2D.Float(si.x, si.y, sj.x, sj.y);
+                        Line2D line2 = new Line2D.Float(sk.x, sk.y, sl.x, sl.y);
+                        if (((sj.x == sk.x) && (sj.y == sk.y)) || ((sj.x == sl.x) && (sj.y == sl.y))){
+                           //System.out.println("ispoint");
+                        } else {
+                            intersect = line1.intersectsLine(line2);
+                        }
+                    }
+                }
+                if (false == intersect) {
+                    triangulation.add(eij);
+                }
+            }
+        
+        
+        
+        //how to determine if the former points are visible to point i(thought about intersections) 
+        }
         //todo: calculate triangulation based on incremental
         return null;
     }
+    
 
     private ArrayList<Edge> flipEdges() {
 
