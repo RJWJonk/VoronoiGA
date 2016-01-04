@@ -13,8 +13,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -85,7 +87,7 @@ public class VoronoiGame extends JFrame {
         mainPanel = new MainMenu();
         optionsPanel = new OptionsMenu();
         creditsPanel = new CreditsMenu();
-        gamePanel = new GameBoardPanel();
+        //gamePanel = new GameBoardPanel();
 
         activePanel = mainPanel;
         this.add(activePanel);
@@ -304,6 +306,13 @@ public class VoronoiGame extends JFrame {
             }
             g.setColor(new Color(200, 200, 0, 50));
             g.fillRect(bx - 10, by - 10, width + 20, height + 20);
+            
+            //draw triangulation
+            g.setColor(new Color(0, 255, 255, 255));
+            for (GameBoard.Edge e: board.geTriangulation() ) {
+                Shape l = new Line2D.Float(e.s1.x, e.s1.y, e.s2.x, e.s2.y);
+                g.draw(l);
+            }
 
             g.setColor(new Color(150, 0, 200, 150));
             Shape s = new Ellipse2D.Float(hx - 5, hy - 5, 10, 10);
@@ -352,10 +361,11 @@ public class VoronoiGame extends JFrame {
         @Override
         public void mousePressed(MouseEvent e) {
             if (board.getStoreAt(hx, hy) == null) {
-                board.addStore(hx, hy, turn);
                 if (turn == 0 && budget1 > 0) {
+                    board.addStore(hx, hy, turn);
                     budget1 -= 1;
                 } else if (turn == 1 && budget2 > 0) {
+                    board.addStore(hx, hy, turn);
                     budget2 -= 1;
                 }
                 turn = (turn + 1) % 2;
