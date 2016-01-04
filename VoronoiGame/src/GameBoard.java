@@ -133,29 +133,28 @@ public class GameBoard {
         }
         return null;
     }
-
-    //stores are vertices
-    private class Store {
-
-        //coordinates of store
-        private float x;
-        private float y;
-
-        //weight, once we add the feature
-        private float weight;
-
-        private int owner; //player 0 or player 1
-
-        private Store(int x, int y, int owner) {
-            this.x = x;
-            this.y = y;
-            this.owner = owner;
-        }
-
-        public String toString() {
-            return "(" + x + "," + y + ")";
-        }
+    
+    public void addStore(int x, int y, int o) {
+        Store s = new Store(x, y, o);
+        addStore(s);
     }
+    
+    //add a store to the data set and recalculate the triangulation
+    public void addStore(Store s) {
+        stores.add(s);
+    }
+    
+    public ArrayList<Store> getStores() {
+        return stores;
+    }
+    
+    public Store getStoreAt(int x, int y) {
+        for (Store s : stores) {
+            if (s.x == x && s.y == y) return s;
+        }
+        return null;
+    }
+
 
     //edges between stores
     private class Edge {
