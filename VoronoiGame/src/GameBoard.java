@@ -190,10 +190,9 @@ public class GameBoard {
         return null;
     }
 
-    private ArrayList<Edge> flipEdges() {
+    private void flipEdges() {
 
-        //todo: return the delaunay triangulation
-        return null;
+        //todo: modifies the triangulation to the delaunay triangulation
     }
 
     public Edge getEdge(Store s1, Store s2) {
@@ -209,6 +208,7 @@ public class GameBoard {
         Store s = new Store(x, y, o);
         addStore(s);
         calculateTriangulation();
+        flipEdges();
     }
 
     //add a store to the data set and recalculate the triangulation

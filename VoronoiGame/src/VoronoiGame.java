@@ -72,13 +72,9 @@ public class VoronoiGame extends JFrame {
     private void createGUI() {
         setResizable(false);
         setSize(600 + 6, 600 + 28);
-        setTitle("TwitTwins");
-        BufferedImage icon = null;
-//        try {
-//            icon = ImageIO.read(TwitTwinsGUI.class.getResourceAsStream("/Datafiles/TwitTwins_icon.png"));
-//        } catch (IOException e) {
-//        }
-        // this.setIconImage(icon);
+        setTitle("Voronoi Game");
+
+        
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         //setIgnoreRepaint(true);
         Container contentPane = getContentPane();
