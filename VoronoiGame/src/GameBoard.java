@@ -117,7 +117,7 @@ public class GameBoard {
                         if ( sj == sk || sj == sl ) {
                             //System.out.println("ispoint");
                         } else {
-                            intersect = line1.intersectsLine(line2) || intersect;
+                            intersect = (line1.intersectsLine(line2) && isParallel(line1,line2)) || intersect;
                         }
                     }
                 }
@@ -295,6 +295,10 @@ public class GameBoard {
             }
         }
         return null;
+    }
+
+    private boolean isParallel(Line2D line1, Line2D line2) {
+        is
     }
 
     //edges between stores
