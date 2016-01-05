@@ -65,7 +65,8 @@ public class GameBoard {
         Line2D lines2 = new Line2D.Float(s2.x, s2.y, s3.x, s3.y);
         Line2D lines3 = new Line2D.Float(s3.x, s3.y, s1.x, s1.y);
 
-        if ((s1.x != s2.x || s1.x != s3.x || s2.x != s3.x) && !overlaps(lines3,lines1) ) {
+        System.out.println(overlaps(lines3, lines1));
+        if ((s1.x != s2.x || s1.x != s3.x || s2.x != s3.x) && !overlaps(lines3, lines1)) {
 
             Edge e12 = new Edge(s1, s2);
             triangulation.add(e12);
@@ -73,7 +74,6 @@ public class GameBoard {
             triangulation.add(e23);
             Edge e31 = new Edge(s3, s1);
             triangulation.add(e31);
-            
 
             if (left_turn(s1, s2, s3)) {
                 e12.setNext(e23);
@@ -121,7 +121,8 @@ public class GameBoard {
                         if (sj == sk || sj == sl) {
                             //System.out.println("ispoint");
                         } else {
-                            intersect = (line1.intersectsLine(line2) || overlaps(line1, line2)) || intersect;
+                            if (findEdgeBetweenStores(sk,sl)!=null)
+                            intersect = (intersects(line1, line2) || overlaps(line1, line2)) || intersect;
                         }
                     }
                 }
@@ -130,12 +131,11 @@ public class GameBoard {
                     //we know the point it connected to as sj
                     ArrayList<Edge> edges = findEdgesOfStore(sj);
                     for (Edge ejp : edges) {
-                        Store sp = ejp.s1 == sj ? s2 : s1;
+                        Store sp = ejp.s1 != sj ? s1 : s2;
                         Edge eip = findEdgeBetweenStores(si, sp);
                         if (eip != null) {
-                            
-                            ejp = new Edge(sj, sp);
-                           
+                            ejp = new Edge(sj,sp);
+                            triangulation.add(ejp);
                             //set the next, prev of si, sj and sp
                             if (left_turn(si, sj, sp)) {
                                 eij.setNext(ejp);
@@ -179,7 +179,13 @@ public class GameBoard {
             for (int j = i + 1; j < triangulation.size(); j++) {
                 Edge ei = triangulation.get(i);
                 Edge ej = triangulation.get(j);
+//                System.out.println("====***=====");
+//                System.out.println(ei.s1);
+//                System.out.println(ei.s2);
+//                System.out.println(ej.s1);
+//                System.out.println(ej.s2);
                 if ((ei.s1 == ej.s1 && ei.s2 == ej.s2) || (ei.s2 == ej.s1 && ei.s1 == ej.s2)) {
+                    System.out.println("settwin!");
                     ei.setTwin(ej);
                     ej.setTwin(ei);
                   
@@ -216,9 +222,11 @@ public class GameBoard {
     }
 
     public boolean isLocalDelaunay(Edge e) {
-        System.out.println(e.twin);
-        if (e.twin == null) return true;
-        
+
+        if (e.twin == null) {
+            return true;
+        }
+
         Store p = e.s1;
         Store q = e.s2;
         Store r = e.next.s1 == e.s1 || e.next.s1 == e.s2 ? e.next.s2 : e.next.s1;
@@ -379,21 +387,48 @@ public class GameBoard {
         double a1 = (line1.getY2() - line1.getY1()) / (line1.getX2() - line1.getX1());
         double a2 = (line2.getY2() - line2.getY1()) / (line2.getX2() - line2.getX1());
 
+        if ((a1 == Double.NEGATIVE_INFINITY || a1 == Double.POSITIVE_INFINITY)
+                && (a2 == Double.NEGATIVE_INFINITY || a2 == Double.POSITIVE_INFINITY)) {
+            double bxl1 = line1.getY1() <= line1.getY2() ? line1.getY1() : line1.getY2();
+            double bxr1 = line1.getY1() > line1.getY2() ? line1.getY1() : line1.getY2();
+            double bxl2 = line2.getY1() <= line2.getY2() ? line2.getY1() : line2.getY2();
+            double bxr2 = line2.getY1() > line2.getY2() ? line2.getY1() : line2.getY2();
+
+            if (bxl2 < bxr1 && bxr2 > bxl1) {
+                return true;
+            }
+        }
+
         double b1 = line1.getY1() - a1 * line1.getX1();
         double b2 = line2.getY1() - a2 * line2.getX1();
 
         if (a1 == a2 && b1 == b2) {
-
             double bxl1 = line1.getX1() <= line1.getX2() ? line1.getX1() : line1.getX2();
             double bxr1 = line1.getX1() > line1.getX2() ? line1.getX1() : line1.getX2();
             double bxl2 = line2.getX1() <= line2.getX2() ? line2.getX1() : line2.getX2();
             double bxr2 = line2.getX1() > line2.getX2() ? line2.getX1() : line2.getX2();
 
-            if ((bxl2 < bxl1 && bxr2 > bxl1) || (bxl2 > bxl1 && bxl2 < bxr1)) {
+            if (bxl2 < bxr1 && bxr2 > bxl1) {
                 return true;
             }
         }
 
+        return false;
+    }
+
+    private boolean intersects(Line2D line1, Line2D line2) {
+        if (line1.intersectsLine(line2)) {
+            System.out.println("intersect found!");
+            System.out.println("L1:"+line1.getP1().getX()+"->"+line1.getP2().getX());
+            System.out.println("L2:"+line2.getP1().getX()+"->"+line2.getP2().getX());
+            if (line1.getP1().getX() == line2.getP2().getX() || line1.getP2().getX() == line2.getP2().getX()
+                    || line1.getP1().getX() == line2.getP1().getX() || line1.getP2().getX() == line2.getP2().getX()) {
+                System.out.println("overruled");
+                return true;
+            } else {
+                return true;
+            }
+        }
         return false;
     }
 
