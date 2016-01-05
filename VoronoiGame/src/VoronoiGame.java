@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,6 +15,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,7 +76,6 @@ public class VoronoiGame extends JFrame {
         setSize(600 + 6, 600 + 28);
         setTitle("Voronoi Game");
 
-        
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         //setIgnoreRepaint(true);
         Container contentPane = getContentPane();
@@ -302,10 +303,10 @@ public class VoronoiGame extends JFrame {
             }
             g.setColor(new Color(200, 200, 0, 50));
             g.fillRect(bx - 10, by - 10, width + 20, height + 20);
-            
+
             //draw triangulation
             g.setColor(new Color(0, 255, 255, 255));
-            for (GameBoard.Edge e: board.geTriangulation() ) {
+            for (GameBoard.Edge e : board.geTriangulation()) {
                 Shape l = new Line2D.Float(e.s1.x, e.s1.y, e.s2.x, e.s2.y);
                 g.draw(l);
             }
@@ -325,7 +326,172 @@ public class VoronoiGame extends JFrame {
                 g.fill(s);
             }
 
+            if (board.getStores().size() > 2) {
+//                for (Shape p : calculatePolygon(board.getStores().get(0))) {
+//                    //Shape p = calculatePolygon(board.getStores().get(0));
+//                    g.setColor(Color.RED);
+//                    g.draw(p);
+//                }
+            }
+
         }
+
+        private ArrayList<Point> calculatePolygon(Store s) {
+            Polygon result = new Polygon();
+            ArrayList<Line2D.Float> lines = new ArrayList<>();
+
+            ArrayList<GameBoard.Edge> consideredEdges = new ArrayList();
+
+            //find all lines
+            for (GameBoard.Edge e : board.findEdgesOfStore(s)) {
+                //do not consider twins again!
+                if (!consideredEdges.contains(e)) {
+                    if (e.twin != null) {
+                        consideredEdges.add(e.twin);
+                    }
+
+                    GameBoard.Edge en = e.next;
+                    float xcc = (e.s1.x + e.s2.x) / 2;
+                    float ycc = (e.s1.y + e.s2.y) / 2;
+                    float ac;
+
+                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y) {
+                        ac = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
+                        ac = -1.0f / ac; //perpendicular
+                        float b = ycc - ac * xcc;
+                        //x,y = 150 and 450
+
+                        //determine where it hits borders of the board
+                        Point pl = null, pr = null, pt = null, pb = null;
+
+                        float yhit_left = ac * 150 + b;
+                        float yhit_right = ac * 450 + b;
+                        float xhit_top = (150 - b) / ac;
+                        float xhit_bot = (450 - b) / ac;
+                        if (150 <= yhit_left && yhit_left <= 450) {
+                            pl = new Point(150, (int) yhit_left);
+                        }
+                        if (150 <= yhit_right && yhit_right <= 450) {
+                            pr = new Point(450, (int) yhit_right);
+                        }
+                        if (150 <= xhit_top && xhit_top <= 450) {
+                            pt = new Point((int) xhit_top, 150);
+                        }
+                        if (150 <= xhit_bot && xhit_bot <= 450) {
+                            pb = new Point((int) xhit_bot, 450);
+                        }
+                        Line2D.Float l = findLine(pl, pr, pt, pb);
+                        lines.add(l);
+                    } else if (e.s2.y == e.s1.y) {
+                        lines.add(new Line2D.Float(new Point((int) xcc, 150), new Point((int) xcc, 450)));
+                    } else if (e.s2.x == e.s1.x) {
+                        lines.add(new Line2D.Float(new Point(150, (int) ycc), new Point(450, (int) ycc)));
+                    }
+
+                }
+            }
+
+            if (lines.size() == 0) {
+                result.addPoint(0, 0);
+                result.addPoint(1, 1);
+                result.addPoint(0, 1);
+            }
+            for (Line2D.Float l : lines) {
+                //result.addPoint(0, 0);
+                result.addPoint((int) l.x1, (int) l.y1);
+                result.addPoint((int) l.x2, (int) l.y2);
+            }
+
+//            System.out.println(lines.get(0).x1);
+//            System.out.println(lines.get(0).y1);
+//            System.out.println(lines.get(0).x2);
+//            System.out.println(lines.get(0).y2);
+            if (lines.size() > 0) {
+                //return lines.get(0);
+            } else {
+                //return null;
+            }
+
+            return null;
+        }
+
+//        private ArrayList<Line2D.Float> calculatePolygon(Store s) {
+//            Polygon result = new Polygon();
+//            ArrayList<Line2D.Float> lines = new ArrayList<>();
+//
+//            ArrayList<GameBoard.Edge> consideredEdges = new ArrayList();
+//
+//            //find all lines
+//            for (GameBoard.Edge e : board.findEdgesOfStore(s)) {
+//                //do not consider twins again!
+//                if (!consideredEdges.contains(e)) {
+//                    if (e.twin != null) {
+//                        consideredEdges.add(e.twin);
+//                    }
+//
+//                    float xc = (e.s1.x + e.s2.x) / 2;
+//                    float yc = (e.s1.y + e.s2.y) / 2;
+//                    float a;
+//
+//                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y) {
+//                        a = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
+//                        a = -1.0f / a; //perpendicular
+//                        float b = yc - a * xc;
+//                        //x,y = 150 and 450
+//
+//                        //determine where it hits borders of the board
+//                        Point pl = null, pr = null, pt = null, pb = null;
+//
+//                        float yhit_left = a * 150 + b;
+//                        float yhit_right = a * 450 + b;
+//                        float xhit_top = (150 - b) / a;
+//                        float xhit_bot = (450 - b) / a;
+//                        if (150 <= yhit_left && yhit_left <= 450) {
+//                            pl = new Point(150, (int) yhit_left);
+//                        }
+//                        if (150 <= yhit_right && yhit_right <= 450) {
+//                            pr = new Point(450, (int) yhit_right);
+//                        }
+//                        if (150 <= xhit_top && xhit_top <= 450) {
+//                            pt = new Point((int) xhit_top, 150);
+//                        }
+//                        if (150 <= xhit_bot && xhit_bot <= 450) {
+//                            pb = new Point((int) xhit_bot, 450);
+//                        }
+//                        Line2D.Float l = findLine(pl, pr, pt, pb);
+//                        lines.add(l);
+//                    } else if (e.s2.y == e.s1.y) {
+//                        lines.add(new Line2D.Float(new Point((int) xc, 150), new Point((int) xc, 450)));
+//                    } else if (e.s2.x == e.s1.x) {
+//                        lines.add(new Line2D.Float(new Point(150, (int) yc), new Point(450, (int) yc)));
+//                    }
+//
+//                }
+//            }
+//
+//            if (lines.size() == 0) {
+//                result.addPoint(0, 0);
+//                result.addPoint(1, 1);
+//                result.addPoint(0, 1);
+//            }
+//            for (Line2D.Float l : lines) {
+//                //result.addPoint(0, 0);
+//                result.addPoint((int) l.x1, (int) l.y1);
+//                result.addPoint((int) l.x2, (int) l.y2);
+//            }
+//
+////            System.out.println(lines.get(0).x1);
+////            System.out.println(lines.get(0).y1);
+////            System.out.println(lines.get(0).x2);
+////            System.out.println(lines.get(0).y2);
+//            if (lines.size() > 0) {
+//                //return lines.get(0);
+//            } else {
+//                //return null;
+//            }
+//
+//            return lines;
+//        }
 
         @Override
         public void mouseDragged(MouseEvent e) {
@@ -381,6 +547,26 @@ public class VoronoiGame extends JFrame {
         @Override
         public void mouseExited(MouseEvent e) {
             //do nothing
+        }
+
+        private Line2D.Float findLine(Point pl, Point pr, Point pt, Point pb) {
+            if (pl != null) {
+                if (pr != null) {
+                    return new Line2D.Float(pl, pr);
+                } else if (pt != null) {
+                    return new Line2D.Float(pl, pt);
+                } else {
+                    return new Line2D.Float(pl, pb);
+                }
+            } else if (pr != null) {
+                if (pt != null) {
+                    return new Line2D.Float(pr, pt);
+                } else {
+                    return new Line2D.Float(pr, pb);
+                }
+            } else {
+                return new Line2D.Float(pt, pb);
+            }
         }
 
     }

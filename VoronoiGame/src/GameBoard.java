@@ -170,7 +170,7 @@ public class GameBoard {
         return temp < 0;
     }
 
-    private ArrayList<Edge> findEdgesOfStore(Store s) {
+    public ArrayList<Edge> findEdgesOfStore(Store s) {
         ArrayList<Edge> result = new ArrayList<>();
 
         for (Edge e : triangulation) {
@@ -239,9 +239,9 @@ public class GameBoard {
         public Store s1;
         public Store s2;
 
-        private Edge next;
-        private Edge prev;
-        private Edge twin;
+        public Edge next;
+        public Edge prev;
+        public Edge twin;
 
         private Edge(Store s1, Store s2) {
             this.s1 = s1;
