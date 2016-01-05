@@ -24,7 +24,7 @@ public class GameBoard {
 
     private ArrayList<Edge> triangulation = new ArrayList();
 
-    private ArrayList<Edge> twins = new ArrayList();
+    
 
     public static void main(String[] args) {
         GameBoard gb = new GameBoard();
@@ -133,6 +133,9 @@ public class GameBoard {
                         Store sp = ejp.s1 == sj ? s2 : s1;
                         Edge eip = findEdgeBetweenStores(si, sp);
                         if (eip != null) {
+                            
+                            ejp = new Edge(sj, sp);
+                           
                             //set the next, prev of si, sj and sp
                             if (left_turn(si, sj, sp)) {
                                 eij.setNext(ejp);
@@ -154,12 +157,11 @@ public class GameBoard {
 
                 }
             }
-
-            //how to determine if the former points are visible to point i(thought about intersections) 
         }
         calculateTwins();
+        flipEdges();
 
-        //todo: calculate triangulation based on incremental
+        //calculate triangulation based on incremental
         //print results
         System.out.println("===Stores===");
         for (Store s : stores) {
@@ -177,10 +179,10 @@ public class GameBoard {
             for (int j = i + 1; j < triangulation.size(); j++) {
                 Edge ei = triangulation.get(i);
                 Edge ej = triangulation.get(j);
-                if ((ei.s1 == ej.s1 && ei.s2 == ej.s2) && (ei.s2 == ej.s1 && ei.s1 == ej.s2)) {
+                if ((ei.s1 == ej.s1 && ei.s2 == ej.s2) || (ei.s2 == ej.s1 && ei.s1 == ej.s2)) {
                     ei.setTwin(ej);
                     ej.setTwin(ei);
-                    twins.add(ei);
+                  
                 }
             }
         }
@@ -214,13 +216,13 @@ public class GameBoard {
     }
 
     public boolean isLocalDelaunay(Edge e) {
-
+        System.out.println(e.twin);
         if (e.twin == null) return true;
         
         Store p = e.s1;
         Store q = e.s2;
-        Store r = e.next.s1 == e.s1 ? e.next.s2 : e.next.s1;
-        Store s = e.twin.next.s1 == e.s1 ? e.twin.next.s2 : e.next.s1;
+        Store r = e.next.s1 == e.s1 || e.next.s1 == e.s2 ? e.next.s2 : e.next.s1;
+        Store s = e.twin.next.s1 == e.s1 || e.twin.next.s1 == e.next.s2 ? e.twin.next.s2 : e.next.s1;
 
         return (signDet3(p, q, r) * signDet4(p, q, r, s) > 0);
 
@@ -246,6 +248,7 @@ public class GameBoard {
                 + det(p.x, p.y, q.x, q.y) * det(1, rz, 1, sz)
                 - det(p.x, pz, q.x, qz) * det(1, r.y, 1, s.y)
                 + det(p.y, pz, q.y, qz) * det(1, r.x, 1, s.x);
+        System.out.println(x);
         if (x > 0) {
             return (1);
         } else {
@@ -258,12 +261,80 @@ public class GameBoard {
     }
 
     private void flipEdges() {
+        calculateTwins();
+        boolean changed=true;
+        while(changed) {
+            System.out.println("hello");
+        changed=false;
+        for (int i = 0; i < triangulation.size(); i++){
+            Edge ei = triangulation.get(i);//need to be fix
+            System.out.println("local? " + isLocalDelaunay(ei));
+            if (!isLocalDelaunay(ei)){
+               changed=true;
+               System.out.println("actual flipping");
+               edgeFlip(ei);
+               
+               
+               
+            }
+        }
+        }
 
         //todo: modifies the triangulation to the delaunay triangulation
     }
 
-    private void edgeflip() {
+    private void edgeFlip(Edge e) {
         //todo: the mothed to do edge flip
+        Store p = e.s1;
+        Store q = e.s2;
+        Store r = e.next.s1 == e.s1 ? e.next.s2 : e.next.s1;
+        Store s = e.twin.next.s1 == e.s1 ? e.twin.next.s2 : e.next.s1;
+        
+        triangulation.remove(e);
+        triangulation.remove(e.twin);
+        Edge en = new Edge(r,s);
+        en.twin = new Edge(s,r);
+        triangulation.add(en);
+        triangulation.add(en.twin);
+        
+        if (en != null) {
+            Edge esp = new Edge(s,p);
+            Edge epr = new Edge(p,r);
+            Edge erq = new Edge(r,q);
+            Edge eqs = new Edge(q,s);
+        
+            //set the next, prev of si, sj and sp
+            if (left_turn(p, r, s)) {
+                en.setNext(esp);
+                en.setPrevious(epr);
+                esp.setNext(epr);
+                esp.setPrevious(en);
+                epr.setNext(en);
+                epr.setPrevious(esp);
+            } else {
+                en.setNext(epr);
+                en.setPrevious(esp);
+                esp.setNext(en);
+                esp.setPrevious(epr);
+                epr.setNext(esp);
+                epr.setPrevious(esp);
+            }
+            if (left_turn(q, r, s)) {
+                en.twin.setNext(erq);
+                en.twin.setPrevious(eqs);
+                erq.setNext(eqs);
+                erq.setPrevious(en.twin);
+                eqs.setNext(en.twin);
+                eqs.setPrevious(erq);
+            } else {
+                en.twin.setNext(eqs);
+                en.twin.setPrevious(erq);
+                erq.setNext(en.twin);
+                erq.setPrevious(eqs);
+                eqs.setNext(erq);
+                eqs.setPrevious(en.twin);
+            }
+        }
     }
 
     public Edge getEdge(Store s1, Store s2) {
