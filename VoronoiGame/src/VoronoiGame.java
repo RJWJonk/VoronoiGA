@@ -354,38 +354,19 @@ public class VoronoiGame extends JFrame {
                     float xcc = (e.s1.x + e.s2.x) / 2;
                     float ycc = (e.s1.y + e.s2.y) / 2;
                     float ac;
+                    float xcn = (en.s1.x + en.s2.x) / 2;
+                    float ycn = (en.s1.y + en.s2.y) / 2;
+                    float an;
 
-                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y) {
+                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y && en.s2.x != en.s1.x && en.s2.y != en.s1.y) {
                         ac = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
                         ac = -1.0f / ac; //perpendicular
-                        float b = ycc - ac * xcc;
-                        //x,y = 150 and 450
-
-                        //determine where it hits borders of the board
-                        Point pl = null, pr = null, pt = null, pb = null;
-
-                        float yhit_left = ac * 150 + b;
-                        float yhit_right = ac * 450 + b;
-                        float xhit_top = (150 - b) / ac;
-                        float xhit_bot = (450 - b) / ac;
-                        if (150 <= yhit_left && yhit_left <= 450) {
-                            pl = new Point(150, (int) yhit_left);
-                        }
-                        if (150 <= yhit_right && yhit_right <= 450) {
-                            pr = new Point(450, (int) yhit_right);
-                        }
-                        if (150 <= xhit_top && xhit_top <= 450) {
-                            pt = new Point((int) xhit_top, 150);
-                        }
-                        if (150 <= xhit_bot && xhit_bot <= 450) {
-                            pb = new Point((int) xhit_bot, 450);
-                        }
-                        Line2D.Float l = findLine(pl, pr, pt, pb);
-                        lines.add(l);
+                        float bc = ycc - ac * xcc;
+                        
                     } else if (e.s2.y == e.s1.y) {
-                        lines.add(new Line2D.Float(new Point((int) xcc, 150), new Point((int) xcc, 450)));
+                        
                     } else if (e.s2.x == e.s1.x) {
-                        lines.add(new Line2D.Float(new Point(150, (int) ycc), new Point(450, (int) ycc)));
+                        
                     }
 
                 }
@@ -492,7 +473,6 @@ public class VoronoiGame extends JFrame {
 //
 //            return lines;
 //        }
-
         @Override
         public void mouseDragged(MouseEvent e) {
             //do nothing
