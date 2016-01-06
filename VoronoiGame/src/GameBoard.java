@@ -77,8 +77,9 @@ public class GameBoard {
 
         for (int i = progress + 1; i < todo.size(); i++) {
             Store si = todo.get(i);
-            Store sj = todo.get(i - 1);
-            for (int k = i; k >= 0; k--) {
+            for (int j= i-1; j>=1; j--){
+            Store sj = todo.get(j);
+            for (int k = j-1; k >= 0; k--) {
                 Store sk = todo.get(k);
                 Triangle t = new Triangle(si, sj, sk);
                 boolean overlaps = false;
@@ -89,6 +90,7 @@ public class GameBoard {
                     triangulation2.add(t);
                 }
             }
+        }
         }
 
 //        Triangle t = new Triangle(s1, s2, s3);
