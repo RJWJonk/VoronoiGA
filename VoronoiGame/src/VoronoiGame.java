@@ -1,4 +1,5 @@
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -305,11 +306,14 @@ public class VoronoiGame extends JFrame {
             g.fillRect(bx - 10, by - 10, width + 20, height + 20);
 
             //draw triangulation
-            g.setColor(new Color(0, 255, 255, 255));
+            g.setColor(new Color(0, 0, 0, 255));
+            BasicStroke bs = new BasicStroke(3);
+            g.setStroke(bs);
             for (GameBoard.Triangle t : board.geTriangulation()) {
                 Polygon p = t.toPolygon();
                 g.draw(p);
             }
+            g.setStroke(new BasicStroke());
 
             g.setColor(new Color(150, 0, 200, 150));
             Shape s = new Ellipse2D.Float(hx - 5, hy - 5, 10, 10);
