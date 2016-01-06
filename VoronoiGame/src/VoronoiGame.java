@@ -212,7 +212,7 @@ public class VoronoiGame extends JFrame {
         int bx = 150;
         int by = 150;
         int bs = 300;
-        int size = 20; //max size 30
+        int size = 10; //max size 30
         int partsize = bs / size;
 
         //hovered spot
@@ -306,9 +306,9 @@ public class VoronoiGame extends JFrame {
 
             //draw triangulation
             g.setColor(new Color(0, 255, 255, 255));
-            for (GameBoard.Edge e : board.geTriangulation()) {
-                Shape l = new Line2D.Float(e.s1.x, e.s1.y, e.s2.x, e.s2.y);
-                g.draw(l);
+            for (GameBoard.Triangle t : board.geTriangulation()) {
+                Polygon p = t.toPolygon();
+                g.draw(p);
             }
 
             g.setColor(new Color(150, 0, 200, 150));

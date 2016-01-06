@@ -5,9 +5,11 @@ import java.util.Random;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.geom.Line2D;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
-import java.applet.Applet;
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -24,7 +26,7 @@ public class GameBoard {
 
     private ArrayList<Edge> triangulation = new ArrayList();
 
-    
+    private Set<Triangle> triangulation2 = new HashSet();
 
     public static void main(String[] args) {
         GameBoard gb = new GameBoard();
@@ -45,6 +47,7 @@ public class GameBoard {
         }
 
         triangulation.clear();
+        triangulation2.clear();
 
         stores.sort(new Comparator<Store>() {
 
@@ -57,121 +60,116 @@ public class GameBoard {
         ArrayList<Store> todo = (ArrayList<Store>) stores.clone();
 
         //Initialize first 3 points
-        Store s1 = todo.get(0);
-        Store s2 = todo.get(1);
-        Store s3 = todo.get(2);
-
-        Line2D lines1 = new Line2D.Float(s1.x, s1.y, s2.x, s2.y);
-        Line2D lines2 = new Line2D.Float(s2.x, s2.y, s3.x, s3.y);
-        Line2D lines3 = new Line2D.Float(s3.x, s3.y, s1.x, s1.y);
-
-        System.out.println(overlaps(lines3, lines1));
-        if ((s1.x != s2.x || s1.x != s3.x || s2.x != s3.x) && !overlaps(lines3, lines1)) {
-
-            Edge e12 = new Edge(s1, s2);
-            triangulation.add(e12);
-            Edge e23 = new Edge(s2, s3);
-            triangulation.add(e23);
-            Edge e31 = new Edge(s3, s1);
-            triangulation.add(e31);
-
-            if (left_turn(s1, s2, s3)) {
-                e12.setNext(e23);
-                e12.setPrevious(e31);
-                e23.setNext(e31);
-                e23.setPrevious(e12);
-                e31.setNext(e12);
-                e31.setPrevious(e23);
-            } else {
-                e12.setNext(e31);
-                e12.setPrevious(e23);
-                e23.setNext(e12);
-                e23.setPrevious(e31);
-                e31.setNext(e23);
-                e31.setPrevious(e12);
-            }
-        } else {
-            Edge e12 = new Edge(s1, s2);
-            triangulation.add(e12);
-            Edge e23 = new Edge(s2, s3);
-            triangulation.add(e23);
-
-            e12.setNext(e23);
-            e12.setPrevious(e23);
-            e23.setNext(e12);
-            e23.setPrevious(e12);
-        }
-        for (int i = 4; i <= stores.size(); i++) {
-            Store si = todo.get(i - 1);
-            for (int j = i - 1; j > 0; j--) {
-                boolean intersect = false;
-
-                Store sj = todo.get(j - 1);
-                Edge eij = new Edge(si, sj);
-
-                for (int k = 1; k < i - 1; k++) {
-
-                    for (int l = k + 1; l <= i - 1; l++) {
-
-                        Store sk = todo.get(k - 1);
-                        Store sl = todo.get(l - 1);
-
-                        Line2D line1 = new Line2D.Float(si.x, si.y, sj.x, sj.y);
-                        Line2D line2 = new Line2D.Float(sk.x, sk.y, sl.x, sl.y);
-                        if (sj == sk || sj == sl) {
-                            //System.out.println("ispoint");
-                        } else {
-                            if (findEdgeBetweenStores(sk,sl)!=null)
-                            intersect = (intersects(line1, line2) || overlaps(line1, line2)) || intersect;
-                        }
-                    }
+        int progress = 0;
+        for (int i = 2; i < todo.size(); i++) {
+            progress = i;
+            Triangle t = new Triangle(todo.get(i), todo.get(i - 1), todo.get(i - 2));
+            if (t.calculateArea() > 0.01) { //machine precision things..
+                System.out.println("ADD");
+                triangulation2.add(t);
+                for (int j = i; j > 0; j--) {
+                    t = new Triangle(todo.get(i), todo.get(j), todo.get(j - 1));
+                    triangulation2.add(t);
                 }
-                if (false == intersect) {
-                    triangulation.add(eij);
-                    //we know the point it connected to as sj
-                    ArrayList<Edge> edges = findEdgesOfStore(sj);
-                    for (Edge ejp : edges) {
-                        Store sp = ejp.s1 != sj ? s1 : s2;
-                        Edge eip = findEdgeBetweenStores(si, sp);
-                        if (eip != null) {
-                            ejp = new Edge(sj,sp);
-                            triangulation.add(ejp);
-                            //set the next, prev of si, sj and sp
-                            if (left_turn(si, sj, sp)) {
-                                eij.setNext(ejp);
-                                eij.setPrevious(eip);
-                                ejp.setNext(eip);
-                                ejp.setPrevious(eij);
-                                eip.setNext(eij);
-                                eip.setPrevious(ejp);
-                            } else {
-                                eij.setNext(eip);
-                                eij.setPrevious(ejp);
-                                ejp.setNext(eij);
-                                ejp.setPrevious(eip);
-                                eip.setNext(ejp);
-                                eip.setPrevious(eij);
-                            }
-                        }
-                    }
+                break;
+            }
+        }
 
+        for (int i = progress + 1; i < todo.size(); i++) {
+            Store si = todo.get(i);
+            Store sj = todo.get(i - 1);
+            for (int k = i; k >= 0; k--) {
+                Store sk = todo.get(k);
+                Triangle t = new Triangle(si, sj, sk);
+                boolean overlaps = false;
+                for (Triangle tt : triangulation2) {
+                    overlaps = overlaps || overlaps(t, tt);
+                }
+                if (!overlaps && t.calculateArea() > 0.001) {
+                    triangulation2.add(t);
                 }
             }
         }
+
+//        Triangle t = new Triangle(s1, s2, s3);
+//        System.out.println(t.calculateArea());
+//        if (t.calculateArea() > 0.01) { //machine precision things..
+//            triangulation2.add(t);
+//        } else {
+//            System.out.println("NOT A TRIANGLE");
+//        }
+//        for (int i = 3; i < stores.size(); i++) {
+//            Store si = todo.get(i);
+//            for (int j = i - 1; j >= 0; j--) {
+//                boolean intersect = false;
+//
+//                Store sj = todo.get(j);
+//                Edge eij = null;
+//
+//                for (int k = 0; k < i; k++) {
+//
+//                    for (int l = k + 1; l <= i; l++) {
+//
+//                        Store sk = todo.get(k);
+//                        Store sl = todo.get(l);
+//
+//                        Line2D line1 = new Line2D.Float(si.x, si.y, sj.x, sj.y);
+//                        Line2D line2 = new Line2D.Float(sk.x, sk.y, sl.x, sl.y);
+//                        if (sj == sk || sj == sl) {
+//                            //System.out.println("ispoint");
+//                        } else {
+//                            if (findEdgeBetweenStores(sk, sl) != null) {
+//                                intersect = (intersects(line1, line2) || overlaps(line1, line2)) || intersect;
+//                            }
+//                        }
+//                    }
+//                }
+//                if (false == intersect) {
+//                    triangulation.add(eij);
+//                    //we know the point it connected to as sj
+//                    ArrayList<Edge> edges = findEdgesOfStore(sj);
+//                    for (Edge ejp : edges) {
+//                        Store sp = ejp.s1 != sj ? s1 : s2;
+//                        Edge eip = findEdgeBetweenStores(si, sp);
+//                        if (eip != null) {
+//                            //ejp = new Edge(sj,sp);
+//                            //triangulation.add(ejp);
+//                            //set the next, prev of si, sj and sp
+//                            if (left_turn(si, sj, sp)) {
+//                                eij.setNext(ejp);
+//                                eij.setPrevious(eip);
+//                                ejp.setNext(eip);
+//                                ejp.setPrevious(eij);
+//                                eip.setNext(eij);
+//                                eip.setPrevious(ejp);
+//                            } else {
+//                                eij.setNext(eip);
+//                                eij.setPrevious(ejp);
+//                                ejp.setNext(eij);
+//                                ejp.setPrevious(eip);
+//                                eip.setNext(ejp);
+//                                eip.setPrevious(eij);
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            }
+//        }
         calculateTwins();
         flipEdges();
 
         //calculate triangulation based on incremental
         //print results
-        System.out.println("===Stores===");
-        for (Store s : stores) {
-            System.out.println(s.toString());
-        }
-
-        System.out.println("===Edges===");
-        for (Edge e : triangulation) {
-            System.out.println(e.s1.toString() + " -> " + e.s2.toString());
-        }
+//        System.out.println("===Stores===");
+//        for (Store s : stores) {
+//            System.out.println(s.toString());
+//        }
+//
+//        System.out.println("===Edges===");
+//        for (Edge e : triangulation) {
+//            System.out.println(e.s1.toString() + " -> " + e.s2.toString());
+//        }
     }
 
     private void calculateTwins() {
@@ -188,7 +186,7 @@ public class GameBoard {
                     System.out.println("settwin!");
                     ei.setTwin(ej);
                     ej.setTwin(ei);
-                  
+
                 }
             }
         }
@@ -270,22 +268,20 @@ public class GameBoard {
 
     private void flipEdges() {
         calculateTwins();
-        boolean changed=true;
-        while(changed) {
-            System.out.println("hello");
-        changed=false;
-        for (int i = 0; i < triangulation.size(); i++){
-            Edge ei = triangulation.get(i);//need to be fix
-            System.out.println("local? " + isLocalDelaunay(ei));
-            if (!isLocalDelaunay(ei)){
-               changed=true;
-               System.out.println("actual flipping");
-               edgeFlip(ei);
-               
-               
-               
+        boolean changed = true;
+        while (changed) {
+            //System.out.println("hello");
+            changed = false;
+            for (int i = 0; i < triangulation.size(); i++) {
+                Edge ei = triangulation.get(i);//need to be fix
+                System.out.println("local? " + isLocalDelaunay(ei));
+                if (!isLocalDelaunay(ei)) {
+                    changed = true;
+                    System.out.println("actual flipping");
+                    edgeFlip(ei);
+
+                }
             }
-        }
         }
 
         //todo: modifies the triangulation to the delaunay triangulation
@@ -297,20 +293,20 @@ public class GameBoard {
         Store q = e.s2;
         Store r = e.next.s1 == e.s1 ? e.next.s2 : e.next.s1;
         Store s = e.twin.next.s1 == e.s1 ? e.twin.next.s2 : e.next.s1;
-        
+
         triangulation.remove(e);
         triangulation.remove(e.twin);
-        Edge en = new Edge(r,s);
-        en.twin = new Edge(s,r);
+        Edge en = new Edge(r, s);
+        en.twin = new Edge(s, r);
         triangulation.add(en);
         triangulation.add(en.twin);
-        
+
         if (en != null) {
-            Edge esp = new Edge(s,p);
-            Edge epr = new Edge(p,r);
-            Edge erq = new Edge(r,q);
-            Edge eqs = new Edge(q,s);
-        
+            Edge esp = new Edge(s, p);
+            Edge epr = new Edge(p, r);
+            Edge erq = new Edge(r, q);
+            Edge eqs = new Edge(q, s);
+
             //set the next, prev of si, sj and sp
             if (left_turn(p, r, s)) {
                 en.setNext(esp);
@@ -370,8 +366,8 @@ public class GameBoard {
         return stores;
     }
 
-    public ArrayList<Edge> geTriangulation() {
-        return triangulation;
+    public Set<Triangle> geTriangulation() {
+        return triangulation2;
     }
 
     public Store getStoreAt(int x, int y) {
@@ -416,20 +412,92 @@ public class GameBoard {
         return false;
     }
 
-    private boolean intersects(Line2D line1, Line2D line2) {
-        if (line1.intersectsLine(line2)) {
-            System.out.println("intersect found!");
-            System.out.println("L1:"+line1.getP1().getX()+"->"+line1.getP2().getX());
-            System.out.println("L2:"+line2.getP1().getX()+"->"+line2.getP2().getX());
-            if (line1.getP1().getX() == line2.getP2().getX() || line1.getP2().getX() == line2.getP2().getX()
-                    || line1.getP1().getX() == line2.getP1().getX() || line1.getP2().getX() == line2.getP2().getX()) {
-                System.out.println("overruled");
-                return true;
-            } else {
-                return true;
-            }
+    public float crossProduct(Store s1, Store s2, Store s3, Store s4) {
+        float x1 = s2.x - s1.x;
+        float y1 = s2.y - s1.y;
+        float x2 = s4.x - s3.x;
+        float y2 = s4.y - s3.y;
+
+        return x1 * y2 - y1 * x2;
+    }
+
+    public boolean sameSide(Store p1, Store p2, Store a, Store b) {
+        float cp1 = crossProduct(b, a, p1, a);
+        float cp2 = crossProduct(b, a, p2, a);
+        return cp1 * cp2 > 0;
+    }
+
+    public boolean pointInTriangle(Store p1, Triangle t) {
+        if (sameSide(p1, t.s2, t.s0, t.s1) && sameSide(p1, t.s1, t.s2, t.s0) && sameSide(p1, t.s0, t.s1, t.s2)) {
+            return true;
+        } else {
+            return false;
         }
+    }
+
+//    private boolean intersects(Line2D line1, Line2D line2) {
+//        if (line1.intersectsLine(line2)) {
+//            System.out.println("intersect found!");
+//            System.out.println("L1:" + line1.getP1().getX() + "->" + line1.getP2().getX());
+//            System.out.println("L2:" + line2.getP1().getX() + "->" + line2.getP2().getX());
+//            if (line1.getP1().getX() == line2.getP2().getX() || line1.getP2().getX() == line2.getP2().getX()
+//                    || line1.getP1().getX() == line2.getP1().getX() || line1.getP2().getX() == line2.getP2().getX()) {
+//                System.out.println("overruled");
+//                return true;
+//            } else {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+    private boolean intersects(Store s1, Store s2, Line2D.Float l2) {
+        System.out.println("Intersection:");
+        System.out.println("(" + s1.x + "," + s1.y + ")->(" + s2.x + "," + s2.y + ")");
+        System.out.println("(" + l2.x1 + "," + l2.y1 + ")->(" + l2.x2 + "," + l2.y2 + ")");
+
+        System.out.println(above(s1, l2));
+        System.out.println(above(s2, l2));
+        return above(s1, l2) * above(s2, l2) == -1 && l2.intersectsLine(new Line2D.Float(s1.x, s1.y, s2.x, s2.y));
+
+    }
+
+    private int above(Store s, Line2D.Float l) {
+        double a = (l.getY2() - l.getY1()) / (l.getX2() - l.getX1());
+
+        if (l.getX2() == l.getX1()) {
+            return s.x < l.getX1() ? 1 : s.x > l.getX1() ? -1 : 0;
+        }
+
+        double b = l.getY1() - a * l.getX1();
+        if (s.y > a * s.x + b + 0.5) {
+            return 1;
+        } else if (s.y < a * s.x + b - 0.5) {
+            return -1;
+        }
+        return 0;
+    }
+
+    private boolean overlaps(Triangle t1, Triangle t2) {
+        Line2D.Float line0 = new Line2D.Float(t1.s0.x, t1.s0.y, t1.s1.x, t1.s1.y);
+        Line2D.Float line1 = new Line2D.Float(t1.s1.x, t1.s1.y, t1.s2.x, t1.s2.y);
+        Line2D.Float line2 = new Line2D.Float(t1.s2.x, t1.s2.y, t1.s0.x, t1.s0.y);
+
+//        if ((above(t2.s0, line0) * above(t2.s1, line0) == -1) || (above(t2.s1, line0) * above(t2.s2, line0) == -1) || (above(t2.s2, line0) * above(t2.s0, line0) == -1)
+//                || (above(t2.s0, line1) * above(t2.s1, line1) == -1) || (above(t2.s1, line1) * above(t2.s2, line1) != 0) || (above(t2.s2, line1) * above(t2.s0, line1) == -1)
+//                || (above(t2.s0, line2) * above(t2.s1, line2) == -1) || (above(t2.s1, line2) * above(t2.s2, line2) == -1) || (above(t2.s2, line2) * above(t2.s0, line2) == -1)) {
+//            return true;
+//        }
+        if (intersects(t2.s0, t2.s1, line0) || intersects(t2.s1, t2.s2, line0) || intersects(t2.s2, t2.s0, line0)
+                || intersects(t2.s0, t2.s1, line1) || intersects(t2.s1, t2.s2, line1) || intersects(t2.s2, t2.s0, line1)
+                || intersects(t2.s0, t2.s1, line2) || intersects(t2.s1, t2.s2, line2) || intersects(t2.s2, t2.s0, line2)) {
+            return true;
+        }
+
         return false;
+//        if (pointInTriangle(t1.s0, t2) || pointInTriangle(t1.s1, t2) || pointInTriangle(t1.s2, t2) ) {
+//            return true;
+//        }
+//        return false;
     }
 
     //edges between stores
@@ -459,4 +527,38 @@ public class GameBoard {
             twin = e;
         }
     }
+
+    public class Triangle {
+
+        public Store s0;
+        public Store s1;
+        public Store s2;
+
+        public Triangle t0;
+        public Triangle t1;
+        public Triangle t2;
+
+        public Triangle(Store s0, Store s1, Store s2) {
+            this.s0 = s0;
+            this.s1 = s1;
+            this.s2 = s2;
+        }
+
+        public float calculateArea() {
+            double base = Math.sqrt((s1.x - s0.x) * (s1.x - s0.x) + (s1.y - s0.y) * (s1.y - s0.y));
+            double base2 = Math.sqrt((s2.x - s0.x) * (s2.x - s0.x) + (s2.y - s0.y) * (s2.y - s0.y));
+            double angle = Math.acos(((s1.x - s0.x) * (s2.x - s0.x) + (s1.y - s0.y) * (s2.y - s0.y)) / (base * base2));
+            double height = Math.sqrt((s2.x - s0.x) * (s2.x - s0.x) + (s2.y - s0.y) * (s2.y - s0.y)) * Math.sin(angle);
+            return (float) Math.abs(base * height / 2);
+        }
+
+        public Polygon toPolygon() {
+            Polygon result = new Polygon();
+            result.addPoint((int) s0.x, (int) s0.y);
+            result.addPoint((int) s1.x, (int) s1.y);
+            result.addPoint((int) s2.x, (int) s2.y);
+            return result;
+        }
+    }
+
 }
