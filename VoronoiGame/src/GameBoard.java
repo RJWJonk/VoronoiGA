@@ -28,6 +28,8 @@ public class GameBoard {
 
     private Set<Triangle> triangulation2 = new HashSet();
 
+    public Triangle triangulation3;
+
     public static void main(String[] args) {
         GameBoard gb = new GameBoard();
     }
@@ -42,57 +44,133 @@ public class GameBoard {
     }
 
     private void calculateTriangulation() {
-        if (stores.size() < 3) {
+        Store b1 = new Store(-300, -300, -1);
+        Store b2 = new Store(300, 900, -1);
+        Store b3 = new Store(900, -300, -1);
+
+        Triangle b = new Triangle(b1, b2, b3);
+        triangulation3 = b;
+
+        if (stores.size() == 0) {
             return;
         }
 
-        triangulation.clear();
-        triangulation2.clear();
+        for (Store s : stores) {
 
-        stores.sort(new Comparator<Store>() {
+            Triangle leaf = triangulation3;
 
-            @Override
-            public int compare(Store s1, Store s2) {
-                return (int) (s1.x - s2.x);
-            }
-        });
-
-        ArrayList<Store> todo = (ArrayList<Store>) stores.clone();
-
-        //Initialize first 3 points
-        int progress = 0;
-        for (int i = 2; i < todo.size(); i++) {
-            progress = i;
-            Triangle t = new Triangle(todo.get(i), todo.get(i - 1), todo.get(i - 2));
-            if (t.calculateArea() > 0.01) { //machine precision things..
-                System.out.println("ADD");
-                triangulation2.add(t);
-                for (int j = i; j > 0; j--) {
-                    t = new Triangle(todo.get(i), todo.get(j), todo.get(j - 1));
-                    triangulation2.add(t);
+            while (!leaf.isLeaf()) {
+                Triangle tt = leaf;
+                leaf = null;
+                for (Triangle t : tt.children) {
+                    if (pointInTriangle(s, t)) {
+                        leaf = t;
+                    }
                 }
-                break;
+                assert leaf != null : "Leaf can't be null at this point..)";
             }
+            Triangle n0 = new Triangle(s, leaf.s0, leaf.s1);
+            Triangle n1 = new Triangle(s, leaf.s1, leaf.s2);
+            Triangle n2 = new Triangle(s, leaf.s2, leaf.s0);
+            n0.n0 = n2;
+            n0.n2 = n1;
+            n1.n0 = n0;
+            n1.n2 = n2;
+            n2.n0 = n1;
+            n2.n2 = n0;
+            if (shareEdge(n0, leaf.n0)) {
+                n0.n1 = leaf.n0;
+            }
+            if (shareEdge(n0, leaf.n1)) {
+                n0.n1 = leaf.n1;
+            }
+            if (shareEdge(n0, leaf.n2)) {
+                n0.n1 = leaf.n2;
+            }
+            if (shareEdge(n1, leaf.n0)) {
+                n1.n1 = leaf.n0;
+            }
+            if (shareEdge(n1, leaf.n1)) {
+                n1.n1 = leaf.n1;
+            }
+            if (shareEdge(n1, leaf.n2)) {
+                n1.n1 = leaf.n2;
+            }
+            if (shareEdge(n2, leaf.n0)) {
+                n2.n1 = leaf.n0;
+            }
+            if (shareEdge(n2, leaf.n1)) {
+                n2.n1 = leaf.n1;
+            }
+            if (shareEdge(n2, leaf.n2)) {
+                n2.n1 = leaf.n2;
+            }
+
+            b.children.add(n0);
+            b.children.add(n1);
+            b.children.add(n2);
+
+            //flipping
+            ArrayList<Triangle> flipping = new ArrayList();
+            flipping.add(n0); flipping.add(n1); flipping.add(n2);
+            
+            for (Triangle f : flipping) {
+                Store fs = findCenter(f);
+                float r = (fs.x-f.s0.x)*(fs.x-f.s0.x) + (fs.y-f.s0.y)*(fs.y-f.s0.y);
+                if (inCircle(fs, r, f.n0)) {
+                    flip(f, f.n0);
+                }
+            }
+            
         }
 
-        for (int i = progress + 1; i < todo.size(); i++) {
-            Store si = todo.get(i);
-            for (int j= i-1; j>=1; j--){
-            Store sj = todo.get(j);
-            for (int k = j-1; k >= 0; k--) {
-                Store sk = todo.get(k);
-                Triangle t = new Triangle(si, sj, sk);
-                boolean overlaps = false;
-                for (Triangle tt : triangulation2) {
-                    overlaps = overlaps || overlaps(t, tt);
-                }
-                if (!overlaps && t.calculateArea() > 0.001) {
-                    triangulation2.add(t);
-                }
-            }
-        }
-        }
-
+//
+//        triangulation.clear();
+//        triangulation2.clear();
+//
+//        stores.sort(new Comparator<Store>() {
+//
+//            @Override
+//            public int compare(Store s1, Store s2) {
+//                return (int) (s1.x - s2.x);
+//            }
+//        });
+//
+//        ArrayList<Store> todo = (ArrayList<Store>) stores.clone();
+//
+//        //Initialize first 3 points
+//        int progress = 0;
+//        for (int i = 2; i < todo.size(); i++) {
+//            progress = i;
+//            Triangle t = new Triangle(todo.get(i), todo.get(i - 1), todo.get(i - 2));
+//            if (t.calculateArea() > 0.01) { //machine precision things..
+//                System.out.println("ADD");
+//                triangulation2.add(t);
+//                for (int j = i; j > 0; j--) {
+//                    t = new Triangle(todo.get(i), todo.get(j), todo.get(j - 1));
+//                    triangulation2.add(t);
+//                }
+//                break;
+//            }
+//        }
+//
+//        for (int i = progress + 1; i < todo.size(); i++) {
+//            Store si = todo.get(i);
+//            for (int j = i - 1; j >= 1; j--) {
+//                Store sj = todo.get(j);
+//                for (int k = j - 1; k >= 0; k--) {
+//                    Store sk = todo.get(k);
+//                    Triangle t = new Triangle(si, sj, sk);
+//                    boolean overlaps = false;
+//                    for (Triangle tt : triangulation2) {
+//                        overlaps = overlaps || overlaps(t, tt);
+//                    }
+//                    if (!overlaps && t.calculateArea() > 0.001) {
+//                        triangulation2.add(t);
+//                    }
+//                }
+//            }
+//        }
 //        Triangle t = new Triangle(s1, s2, s3);
 //        System.out.println(t.calculateArea());
 //        if (t.calculateArea() > 0.01) { //machine precision things..
@@ -158,9 +236,8 @@ public class GameBoard {
 //                }
 //            }
 //        }
-        calculateTwins();
-        flipEdges();
-
+//        calculateTwins();
+//        flipEdges();
         //calculate triangulation based on incremental
         //print results
 //        System.out.println("===Stores===");
@@ -172,6 +249,51 @@ public class GameBoard {
 //        for (Edge e : triangulation) {
 //            System.out.println(e.s1.toString() + " -> " + e.s2.toString());
 //        }
+    }
+    
+    public void flip(Triangle t1, Triangle t2) {
+    }
+
+    public boolean inCircle(Store center, float r, Triangle t) {
+        float d0 = (t.s0.x-center.x)*(t.s0.x-center.x)+(t.s0.y-center.y)*(t.s0.y-center.y);
+        float d1 = (t.s1.x-center.x)*(t.s1.x-center.x)+(t.s1.y-center.y)*(t.s1.y-center.y);
+        float d2 = (t.s2.x-center.x)*(t.s2.x-center.x)+(t.s2.y-center.y)*(t.s2.y-center.y);
+        return d0 < r && d1 < r && d2 < r;
+    }
+    
+    public Store findCenter(Triangle t) {
+
+        //line 1
+        float cx1 = (t.s1.x + t.s0.x) / 2;
+        float cy1 = (t.s1.y + t.s0.y) / 2;
+        float a1 = (t.s1.y - t.s0.y) / (t.s1.x - t.s0.x);
+        a1 = -1 / a1;
+        float b1 = cy1 - a1 * cx1;
+
+        //line 2
+        float cx2 = (t.s2.x + t.s1.x) / 2;
+        float cy2 = (t.s2.y + t.s1.y) / 2;
+        float a2 = (t.s2.y - t.s1.y) / (t.s2.x - t.s1.x);
+        a2 = -1 / a2;
+        float b2 = cy2 - a2 * cx2;
+        
+        float x = (b2 - b1) / (a1 - a2);
+        float y = a1 * x + b1;
+
+        return new Store(x, y, -1);
+    }
+
+    public boolean shareEdge(Triangle t1, Triangle t2) {
+        if (t2 == null) {
+            return true;
+        }
+
+        int c = 0;
+        c += t1.s0 == t2.s0 || t1.s0 == t2.s1 || t1.s0 == t2.s2 ? 1 : 0;
+        c += t1.s1 == t2.s0 || t1.s1 == t2.s1 || t1.s1 == t2.s2 ? 1 : 0;
+        c += t1.s2 == t2.s0 || t1.s2 == t2.s1 || t1.s2 == t2.s2 ? 1 : 0;
+
+        return c == 2;
     }
 
     private void calculateTwins() {
@@ -423,10 +545,15 @@ public class GameBoard {
         return x1 * y2 - y1 * x2;
     }
 
+    //determines wether p1 is on the same side as p2 compared to the line ab
     public boolean sameSide(Store p1, Store p2, Store a, Store b) {
         float cp1 = crossProduct(b, a, p1, a);
         float cp2 = crossProduct(b, a, p2, a);
         return cp1 * cp2 > 0;
+    }
+
+    public boolean onLine(Store p1, Store a, Store b) {
+        return crossProduct(b, a, p1, a) < 0.001;
     }
 
     public boolean pointInTriangle(Store p1, Triangle t) {
@@ -502,6 +629,10 @@ public class GameBoard {
 //        return false;
     }
 
+    private Exception Exception(String leaf_cant_be_null_at_this_point) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     //edges between stores
     public class Edge {
 
@@ -540,10 +671,17 @@ public class GameBoard {
         public Triangle t1;
         public Triangle t2;
 
+        public Triangle n0;
+        public Triangle n1;
+        public Triangle n2;
+
+        public ArrayList<Triangle> children;
+
         public Triangle(Store s0, Store s1, Store s2) {
             this.s0 = s0;
             this.s1 = s1;
             this.s2 = s2;
+            children = new ArrayList<>();
         }
 
         public float calculateArea() {
@@ -560,6 +698,10 @@ public class GameBoard {
             result.addPoint((int) s1.x, (int) s1.y);
             result.addPoint((int) s2.x, (int) s2.y);
             return result;
+        }
+
+        public boolean isLeaf() {
+            return children.isEmpty();
         }
     }
 

@@ -19,7 +19,7 @@ public class Store {
 
     public int owner; //player 0 or player 1
 
-    public Store(int x, int y, int owner) {
+    public Store(float x, float y, int owner) {
         this.x = x;
         this.y = y;
         this.owner = owner;

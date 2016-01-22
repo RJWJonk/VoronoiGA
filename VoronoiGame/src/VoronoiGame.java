@@ -330,12 +330,26 @@ public class VoronoiGame extends JFrame {
                 g.fill(s);
             }
 
-            if (board.getStores().size() > 2) {
-//                for (Shape p : calculatePolygon(board.getStores().get(0))) {
-//                    //Shape p = calculatePolygon(board.getStores().get(0));
-//                    g.setColor(Color.RED);
-//                    g.draw(p);
-//                }
+            g.setColor(new Color(0, 255, 255, 255));
+            GameBoard.Triangle t = board.triangulation3;
+            if (t != null) {
+                
+
+                g.draw(t.toPolygon());
+                ArrayList<GameBoard.Triangle> todo = new ArrayList<>();
+                todo.add(t);
+                while (!todo.isEmpty()) {
+                    t = todo.get(0);
+                    todo.remove(t);
+                    for (GameBoard.Triangle tn : t.children) {
+                        if (tn.isLeaf()) {
+                            Polygon p = tn.toPolygon();
+                            g.draw(p);
+                        } else {
+                            todo.add(tn);
+                        }
+                    }
+                }
             }
 
         }
@@ -366,11 +380,11 @@ public class VoronoiGame extends JFrame {
                         ac = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
                         ac = -1.0f / ac; //perpendicular
                         float bc = ycc - ac * xcc;
-                        
+
                     } else if (e.s2.y == e.s1.y) {
-                        
+
                     } else if (e.s2.x == e.s1.x) {
-                        
+
                     }
 
                 }
