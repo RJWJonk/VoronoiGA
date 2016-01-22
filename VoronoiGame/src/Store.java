@@ -1,3 +1,6 @@
+
+import java.util.Random;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,17 +14,18 @@
 public class Store {
 
     //coordinates of store
-    public float x;
-    public float y;
+    public double x;
+    public double y;
 
     //weight, once we add the feature
-    private float weight;
+    private double weight;
 
     public int owner; //player 0 or player 1
 
-    public Store(float x, float y, int owner) {
-        this.x = x;
-        this.y = y;
+    public Store(double x, double y, int owner) {
+        Random random = new Random();
+        this.x = x + (random.nextDouble()-0.5f)/100;
+        this.y = y + (random.nextDouble()-0.5f)/100;
         this.owner = owner;
     }
 

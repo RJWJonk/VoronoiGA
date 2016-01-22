@@ -44,11 +44,43 @@ public class GameBoard {
     }
 
     private void calculateTriangulation() {
-        Store b1 = new Store(-300, -300, -1);
-        Store b2 = new Store(300, 900, -1);
-        Store b3 = new Store(900, -300, -1);
+        Store b1 = new Store(-30000, -30000, -1);
+        Store b2 = new Store(300, 90000, -1);
+        Store b3 = new Store(90000, -30000, -1);
+
+        //additional points for neighbours of initial triangle
+        Store nb1 = new Store(-300000, 90000, -1);
+        Store nb2 = new Store(90000, 90000, -1);
+        Store nb3 = new Store(3000, -800000, -1);
+
+        Store nbx1 = new Store(-400000, 1000000, -1);
+        Store nbx2 = new Store(40000000, 1000000, -1);
+        Store nbx3 = new Store(300000, - 10000000, -1);
 
         Triangle b = new Triangle(b1, b2, b3);
+        Triangle bb1 = new Triangle(b1, nb1, b2);
+        Triangle bb2 = new Triangle(b2, nb2, b3);
+        Triangle bb3 = new Triangle(b3, nb3, b1);
+        Triangle bb1x = new Triangle(b1, nbx1, nb1);
+        Triangle bb1y = new Triangle(nbx1, b2, nb1);
+        Triangle bb2x = new Triangle(b2, nbx2, nb2);
+        Triangle bb2y = new Triangle(nbx2, b3, nb2);
+        Triangle bb3x = new Triangle(b3, nbx3, nb3);
+        Triangle bb3y = new Triangle(nbx3, b1, nb3);
+
+        b.n0 = bb1;
+        bb1.n2 = b;
+        bb1.n1 = bb1x;
+        bb1.n0 = bb1y;
+        b.n1 = bb2;
+        bb2.n2 = b;
+        bb2.n1 = bb2x;
+        bb2.n0 = bb2y;
+        b.n2 = bb3;
+        bb3.n2 = b;
+        bb3.n1 = bb3x;
+        bb3.n0 = bb3y;
+
         triangulation3 = b;
 
         if (stores.size() == 0) {
@@ -63,65 +95,100 @@ public class GameBoard {
                 Triangle tt = leaf;
                 leaf = null;
                 for (Triangle t : tt.children) {
+                    // System.out.println(pointInTriangle(s,t));
                     if (pointInTriangle(s, t)) {
                         leaf = t;
+                        break;
                     }
-                }
-                assert leaf != null : "Leaf can't be null at this point..)";
-            }
-            Triangle n0 = new Triangle(s, leaf.s0, leaf.s1);
-            Triangle n1 = new Triangle(s, leaf.s1, leaf.s2);
-            Triangle n2 = new Triangle(s, leaf.s2, leaf.s0);
-            n0.n0 = n2;
-            n0.n2 = n1;
-            n1.n0 = n0;
-            n1.n2 = n2;
-            n2.n0 = n1;
-            n2.n2 = n0;
-            if (shareEdge(n0, leaf.n0)) {
-                n0.n1 = leaf.n0;
-            }
-            if (shareEdge(n0, leaf.n1)) {
-                n0.n1 = leaf.n1;
-            }
-            if (shareEdge(n0, leaf.n2)) {
-                n0.n1 = leaf.n2;
-            }
-            if (shareEdge(n1, leaf.n0)) {
-                n1.n1 = leaf.n0;
-            }
-            if (shareEdge(n1, leaf.n1)) {
-                n1.n1 = leaf.n1;
-            }
-            if (shareEdge(n1, leaf.n2)) {
-                n1.n1 = leaf.n2;
-            }
-            if (shareEdge(n2, leaf.n0)) {
-                n2.n1 = leaf.n0;
-            }
-            if (shareEdge(n2, leaf.n1)) {
-                n2.n1 = leaf.n1;
-            }
-            if (shareEdge(n2, leaf.n2)) {
-                n2.n1 = leaf.n2;
-            }
 
-            b.children.add(n0);
-            b.children.add(n1);
-            b.children.add(n2);
-
-            //flipping
-            ArrayList<Triangle> flipping = new ArrayList();
-            flipping.add(n0); flipping.add(n1); flipping.add(n2);
-            
-            for (Triangle f : flipping) {
-                Store fs = findCenter(f);
-                float r = (fs.x-f.s0.x)*(fs.x-f.s0.x) + (fs.y-f.s0.y)*(fs.y-f.s0.y);
-                if (inCircle(fs, r, f.n0)) {
-                    flip(f, f.n0);
                 }
             }
-            
+
+            Triangle new0;
+            Triangle new1;
+            Triangle new2;
+
+            new0 = new Triangle(s, leaf.s0, leaf.s1);
+            new1 = new Triangle(s, leaf.s1, leaf.s2);
+            new2 = new Triangle(s, leaf.s2, leaf.s0);
+            new0.n0 = new2;
+            new0.n2 = new1;
+            new1.n0 = new0;
+            new1.n2 = new2;
+            new2.n0 = new1;
+            new2.n2 = new0;
+            if (shareEdge(new0, leaf.n0)) {
+                new0.n1 = leaf.n0;
+            }
+            if (shareEdge(new0, leaf.n1)) {
+                new0.n1 = leaf.n1;
+            }
+            if (shareEdge(new0, leaf.n2)) {
+                new0.n1 = leaf.n2;
+            }
+            if (shareEdge(new1, leaf.n0)) {
+                new1.n1 = leaf.n0;
+            }
+            if (shareEdge(new1, leaf.n1)) {
+                new1.n1 = leaf.n1;
+            }
+            if (shareEdge(new1, leaf.n2)) {
+                new1.n1 = leaf.n2;
+            }
+            if (shareEdge(new2, leaf.n0)) {
+                new2.n1 = leaf.n0;
+            }
+            if (shareEdge(new2, leaf.n1)) {
+                new2.n1 = leaf.n1;
+            }
+            if (shareEdge(new2, leaf.n2)) {
+                new2.n1 = leaf.n2;
+            }
+
+            leaf.children.add(new0);
+            leaf.children.add(new1);
+            leaf.children.add(new2);
+
+            if (stores.size() > 1) {
+                //flipping
+                Stack<Triangle> flipping = new Stack();
+                flipping.push(new2);
+                flipping.push(new1);
+                flipping.push(new0);
+
+                while (!flipping.isEmpty()) {
+                    Triangle f = flipping.pop();
+                    Store fs = findCenter(f);
+                    double r = (fs.x - f.s0.x) * (fs.x - f.s0.x) + (fs.y - f.s0.y) * (fs.y - f.s0.y);
+                    r = Math.sqrt(r);
+                    if (inCircle(fs, r, f.n0)) {
+                        System.out.println("FLIPPING NOW");
+                        flip(f, f.n0);
+                        for (Triangle fa : f.children) {
+                            if (fa != triangulation3) {
+                                flipping.push(fa);
+                            }
+                        }
+                    } else if (inCircle(fs, r, f.n1)) {
+                        System.out.println("FLIPPING NOW");
+                        flip(f, f.n1);
+                        for (Triangle fa : f.children) {
+                            if (fa != triangulation3) {
+                                flipping.push(fa);
+                            }
+                        }
+                    } else if (inCircle(fs, r, f.n2)) {
+                        System.out.println("FLIPPING NOW");
+                        flip(f, f.n2);
+                        for (Triangle fa : f.children) {
+                            if (fa != triangulation3) {
+                                flipping.push(fa);
+                            }
+                        }
+                    }
+
+                }
+            }
         }
 
 //
@@ -250,43 +317,364 @@ public class GameBoard {
 //            System.out.println(e.s1.toString() + " -> " + e.s2.toString());
 //        }
     }
-    
+
     public void flip(Triangle t1, Triangle t2) {
+        Edge missing = findMissingEdge(t1, t2);
+        Edge common = findCommonEdge(t1, t2);
+        Triangle new1 = new Triangle(missing.s1, common.s1, missing.s2);
+        Triangle new2 = new Triangle(missing.s2, common.s2, missing.s1);
+        makeAntiClockWise(new1);
+        makeAntiClockWise(new2);
+
+        new1.n2 = new2;
+        new2.n2 = new1;
+
+        new1.n0 = findNeighbour(new1.s0, new1);
+        if (findNeighbour(new1.s0, new1.n0) == t1) {
+            new1.n0.n0 = new1;
+        }
+        if (findNeighbour(new1.s0, new1.n1) == t1) {
+            new1.n0.n1 = new1;
+        }
+        if (findNeighbour(new1.s0, new1.n2) == t1) {
+            new1.n0.n2 = new1;
+        }
+        new1.n0 = findNeighbour(new1.s0, new1);
+        if (findNeighbour(new1.s0, new1.n0) == t1) {
+            new1.n0.n0 = new1;
+        }
+        if (findNeighbour(new1.s0, new1.n1) == t1) {
+            new1.n0.n1 = new1;
+        }
+        if (findNeighbour(new1.s0, new1.n2) == t1) {
+            new1.n0.n2 = new1;
+        }
+
+        if (storeInTriangle(new1.s0, t1.n0) && storeInTriangle(new1.s1, t1.n0)) {
+            new1.n0 = t1.n0;
+        }
+
     }
 
-    public boolean inCircle(Store center, float r, Triangle t) {
-        float d0 = (t.s0.x-center.x)*(t.s0.x-center.x)+(t.s0.y-center.y)*(t.s0.y-center.y);
-        float d1 = (t.s1.x-center.x)*(t.s1.x-center.x)+(t.s1.y-center.y)*(t.s1.y-center.y);
-        float d2 = (t.s2.x-center.x)*(t.s2.x-center.x)+(t.s2.y-center.y)*(t.s2.y-center.y);
-        return d0 < r && d1 < r && d2 < r;
+    public Triangle findNeighbour(Store s, Triangle t) {
+        if (!storeInTriangle(s, t)) {
+            return null;
+        }
+
+        return s == t.s0 ? t.n0 : (s == t.s1 ? t.n1 : t.n2);
+
     }
-    
+
+    public void makeAntiClockWise(Triangle t) {
+        if (left_turn(t.s0, t.s1, t.s2)) {
+            //done
+        } else {
+            Store temp = t.s1;
+            t.s1 = t.s2;
+            t.s2 = temp;
+        }
+    }
+
+    public void flip2(Triangle t1, Triangle t2) {
+        Store swap1 = !storeInTriangle(t2.s0, t1) ? t2.s0 : !storeInTriangle(t2.s1, t1) ? t2.s1 : t2.s2;
+        Store prev1 = swap1 == t2.s0 ? t2.s2 : swap1 == t2.s1 ? t2.s0 : t2.s1;
+        Edge edge1 = findOppositeEdge(prev1, t1);
+
+        Triangle new1;
+//        if (!left_turn(swap1, edge1.s1, edge1.s2)) {
+        new1 = new Triangle(swap1, edge1.s1, edge1.s2);
+//        } else {
+//            new1 = new Triangle(swap1, edge1.s2, edge1.s1);
+//        }
+
+        Store swap2 = !storeInTriangle(t1.s0, t2) ? t1.s0 : !storeInTriangle(t1.s1, t2) ? t1.s1 : t1.s2;
+        Store prev2 = swap2 == t1.s0 ? t1.s2 : swap2 == t1.s1 ? t1.s0 : t1.s1;
+        Edge edge2 = findOppositeEdge(prev2, t2);
+
+        Triangle new2;
+
+//        if (!left_turn(swap2, edge2.s1, edge2.s2)) {
+        new2 = new Triangle(swap2, edge2.s1, edge2.s2);
+//        } else {
+//            new2 = new Triangle(swap2, edge2.s2, edge2.s1);
+//        }
+
+        new1.n2 = new2;
+        new2.n2 = new1;
+
+        int count = 0;
+
+        if (shareEdge(t2.n0, new1)) {
+            count++;
+
+            new1.n0 = t2.n0;
+            if (t2.n0.n0 == t2) {
+                t2.n0.n0 = new1;
+            }
+            if (t2.n0.n1 == t2) {
+                t2.n0.n1 = new1;
+            }
+            if (t2.n0.n2 == t2) {
+                t2.n0.n2 = new1;
+            }
+        } else if (shareEdge(t2.n1, new1)) {
+            count++;
+            new1.n0 = t2.n1;
+            if (t2.n1.n0 == t2) {
+                t2.n1.n0 = new1;
+            }
+            if (t2.n1.n1 == t2) {
+                t2.n1.n1 = new1;
+            }
+            if (t2.n1.n2 == t2) {
+                t2.n1.n2 = new1;
+            }
+        } else if (shareEdge(t2.n2, new1)) {
+            count++;
+            new1.n0 = t2.n2;
+            if (t2.n2.n0 == t2) {
+                t2.n2.n0 = new1;
+            }
+            if (t2.n2.n1 == t2) {
+                t2.n2.n1 = new1;
+            }
+            if (t2.n2.n2 == t2) {
+                t2.n2.n2 = new1;
+            }
+        }
+
+        if (shareEdge(t1.n0, new2)) {
+            count++;
+            new2.n0 = t1.n0;
+            if (t1.n0.n0 == t1) {
+                t1.n0.n0 = new2;
+            }
+            if (t1.n0.n1 == t1) {
+                t1.n0.n1 = new2;
+            }
+            if (t1.n0.n2 == t1) {
+                t1.n0.n2 = new2;
+            }
+        } else if (shareEdge(t1.n1, new2)) {
+            count++;
+            new2.n0 = t1.n1;
+            if (t1.n1.n0 == t1) {
+                t1.n1.n0 = new2;
+            }
+            if (t1.n1.n1 == t1) {
+                t1.n1.n1 = new2;
+            }
+            if (t1.n1.n2 == t1) {
+                t1.n1.n2 = new2;
+            }
+        } else if (shareEdge(t1.n2, new2)) {
+            count++;
+            new2.n0 = t1.n2;
+            if (t1.n2.n0 == t1) {
+                t1.n2.n0 = new2;
+            }
+            if (t1.n2.n1 == t1) {
+                t1.n2.n1 = new2;
+            }
+            if (t1.n2.n2 == t1) {
+                t1.n2.n2 = new2;
+            }
+        }
+
+        if (shareEdge(t1.n0, new1)) {
+            count++;
+            new1.n1 = t1.n0;
+            if (t1.n0.n0 == t1) {
+                t1.n0.n0 = new1;
+            }
+            if (t1.n0.n1 == t1) {
+                t1.n0.n1 = new1;
+            }
+            if (t1.n0.n2 == t1) {
+                t1.n0.n2 = new1;
+            }
+        } else if (shareEdge(t1.n1, new1)) {
+            count++;
+            new1.n1 = t1.n1;
+            if (t1.n1.n0 == t1) {
+                t1.n1.n0 = new1;
+            }
+            if (t1.n1.n1 == t1) {
+                t1.n1.n1 = new1;
+            }
+            if (t1.n1.n2 == t1) {
+                t1.n1.n2 = new1;
+            }
+        } else if (shareEdge(t1.n2, new1)) {
+            count++;
+            new1.n1 = t1.n2;
+            if (t1.n2.n0 == t1) {
+                t1.n2.n0 = new1;
+            }
+            if (t1.n2.n1 == t1) {
+                t1.n2.n1 = new1;
+            }
+            if (t1.n2.n2 == t1) {
+                t1.n2.n2 = new1;
+            }
+        }
+
+        if (shareEdge(t2.n0, new2)) {
+            count++;
+            new2.n1 = t2.n0;
+            if (t2.n0.n0 == t2) {
+                t2.n0.n0 = new2;
+            }
+            if (t2.n0.n1 == t2) {
+                t2.n0.n1 = new2;
+            }
+            if (t2.n0.n2 == t2) {
+                t2.n0.n2 = new2;
+            }
+        } else if (shareEdge(t2.n1, new2)) {
+            count++;
+            new2.n1 = t2.n1;
+            if (t2.n1.n0 == t2) {
+                t2.n1.n0 = new2;
+            }
+            if (t2.n1.n1 == t2) {
+                t2.n1.n1 = new2;
+            }
+            if (t2.n1.n2 == t2) {
+                t2.n1.n2 = new2;
+            }
+        } else if (shareEdge(t2.n2, new2)) {
+            count++;
+            new2.n1 = t1.n2;
+            if (t2.n2.n0 == t1) {
+                t2.n2.n0 = new2;
+            }
+            if (t2.n2.n1 == t1) {
+                t2.n2.n1 = new2;
+            }
+            if (t2.n2.n2 == t1) {
+                t2.n2.n2 = new2;
+            }
+        }
+
+        //System.out.println("TESTING COUNT: " + count);
+        t1.children.add(new1);
+        t1.children.add(new2);
+        t2.children.add(new1);
+        t2.children.add(new2);
+    }
+
+    public Edge findMissingEdge(Triangle t1, Triangle t2) {
+        ArrayList<Store> s1 = new ArrayList<>();
+        s1.add(t1.s0);
+        s1.add(t1.s1);
+        s1.add(t1.s2);
+        s1.remove(t2.s0);
+        s1.remove(t2.s1);
+        s1.remove(t2.s2);
+        ArrayList<Store> s2 = new ArrayList<>();
+        s2.add(t2.s0);
+        s2.add(t2.s1);
+        s2.add(t2.s2);
+        s2.remove(t1.s0);
+        s2.remove(t1.s1);
+        s2.remove(t1.s2);
+
+        return new Edge(s1.get(0), s2.get(0));
+    }
+
+    public Edge findCommonEdge(Triangle t1, Triangle t2) {
+        Edge e = findMissingEdge(t1, t2);
+        ArrayList<Store> s = new ArrayList<>();
+        s.add(t2.s0);
+        s.add(t2.s1);
+        s.add(t2.s2);
+        if (!s.contains(t1.s0)) {
+            s.add(t1.s0);
+        }
+        if (!s.contains(t1.s1)) {
+            s.add(t1.s1);
+        }
+        if (!s.contains(t1.s2)) {
+            s.add(t1.s2);
+        }
+        s.remove(e.s1);
+        s.remove(e.s2);
+        return new Edge(s.get(0), s.get(1));
+    }
+
+    public Edge findOppositeEdge(Store s, Triangle t) {
+        if (s == t.s0) {
+            return new Edge(t.s1, t.s2);
+        }
+        if (s == t.s1) {
+            return new Edge(t.s2, t.s0);
+        }
+        if (s == t.s2) {
+            return new Edge(t.s0, t.s1);
+        }
+        return null;
+    }
+
+    public boolean storeInTriangle(Store s, Triangle t) {
+        return s == t.s0 || s == t.s1 || s == t.s2;
+    }
+
+    public boolean inCircle(Store center, double r, Triangle t) {
+        if (t == null) {
+            return false;
+        }
+//        System.out.println("%===%");
+//        System.out.println(center);
+//        System.out.println(t.s0);
+//        System.out.println(t.s1);
+//        System.out.println(t.s2);
+        double d0 = (t.s0.x - center.x) * (t.s0.x - center.x) + (t.s0.y - center.y) * (t.s0.y - center.y);
+        double d1 = (t.s1.x - center.x) * (t.s1.x - center.x) + (t.s1.y - center.y) * (t.s1.y - center.y);
+        double d2 = (t.s2.x - center.x) * (t.s2.x - center.x) + (t.s2.y - center.y) * (t.s2.y - center.y);
+        d0 = Math.sqrt(d0);
+        d1 = Math.sqrt(d1);
+        d2 = Math.sqrt(d2);
+//        System.out.println("====");
+//        System.out.println(r);
+//        System.out.println(d0);
+//        System.out.println(d1);
+//        System.out.println(d2);
+        double d = d0 < d1 ? (d2 < d0 ? d2 : d0) : (d2 < d1 ? d2 : d1);
+//        System.out.println(d);
+//        System.out.println(d < r*0.999);
+//        System.out.println(r);
+//        System.out.println(d);
+        return d < r * 0.999;
+    }
+
     public Store findCenter(Triangle t) {
 
         //line 1
-        float cx1 = (t.s1.x + t.s0.x) / 2;
-        float cy1 = (t.s1.y + t.s0.y) / 2;
-        float a1 = (t.s1.y - t.s0.y) / (t.s1.x - t.s0.x);
+        double cx1 = (t.s1.x + t.s0.x) / 2;
+        double cy1 = (t.s1.y + t.s0.y) / 2;
+        double a1 = (t.s1.y - t.s0.y) / (t.s1.x - t.s0.x);
         a1 = -1 / a1;
-        float b1 = cy1 - a1 * cx1;
+        double b1 = cy1 - a1 * cx1;
 
         //line 2
-        float cx2 = (t.s2.x + t.s1.x) / 2;
-        float cy2 = (t.s2.y + t.s1.y) / 2;
-        float a2 = (t.s2.y - t.s1.y) / (t.s2.x - t.s1.x);
+        double cx2 = (t.s2.x + t.s1.x) / 2;
+        double cy2 = (t.s2.y + t.s1.y) / 2;
+        double a2 = (t.s2.y - t.s1.y) / (t.s2.x - t.s1.x);
         a2 = -1 / a2;
-        float b2 = cy2 - a2 * cx2;
-        
-        float x = (b2 - b1) / (a1 - a2);
-        float y = a1 * x + b1;
+        double b2 = cy2 - a2 * cx2;
+
+        double x = (b2 - b1) / (a1 - a2);
+        double y = a1 * x + b1;
 
         return new Store(x, y, -1);
     }
 
     public boolean shareEdge(Triangle t1, Triangle t2) {
-        if (t2 == null) {
-            return true;
-        }
+//        if (t2 == null) {
+//            return true;
+//        }
+        //if (t1 == null) return false;
 
         int c = 0;
         c += t1.s0 == t2.s0 || t1.s0 == t2.s1 || t1.s0 == t2.s2 ? 1 : 0;
@@ -367,12 +755,12 @@ public class GameBoard {
     }
 
     public int signDet4(Store p, Store q, Store r, Store s) {
-        float pz = p.x * p.x + p.y * p.y;
-        float qz = q.x * q.x + q.y * q.y;
-        float rz = r.x * r.x + r.y * r.y;
-        float sz = s.x * s.x + s.y * s.y;
+        double pz = p.x * p.x + p.y * p.y;
+        double qz = q.x * q.x + q.y * q.y;
+        double rz = r.x * r.x + r.y * r.y;
+        double sz = s.x * s.x + s.y * s.y;
 
-        float x = det(1, p.x, 1, q.x) * det(r.y, rz, s.y, sz)
+        double x = det(1, p.x, 1, q.x) * det(r.y, rz, s.y, sz)
                 - det(1, p.y, 1, q.y) * det(r.x, rz, s.x, sz)
                 + det(1, pz, 1, qz) * det(r.x, r.y, s.x, s.y)
                 + det(p.x, p.y, q.x, q.y) * det(1, rz, 1, sz)
@@ -386,7 +774,7 @@ public class GameBoard {
         }
     }
 
-    private float det(float a, float b, float c, float d) {
+    private double det(double a, double b, double c, double d) {
         return (a * d - b * c);
     }
 
@@ -536,24 +924,25 @@ public class GameBoard {
         return false;
     }
 
-    public float crossProduct(Store s1, Store s2, Store s3, Store s4) {
-        float x1 = s2.x - s1.x;
-        float y1 = s2.y - s1.y;
-        float x2 = s4.x - s3.x;
-        float y2 = s4.y - s3.y;
+    public double crossProduct(Store s1, Store s2, Store s3, Store s4) {
+        double x1 = s2.x - s1.x;
+        double y1 = s2.y - s1.y;
+        double x2 = s4.x - s3.x;
+        double y2 = s4.y - s3.y;
 
         return x1 * y2 - y1 * x2;
     }
 
     //determines wether p1 is on the same side as p2 compared to the line ab
     public boolean sameSide(Store p1, Store p2, Store a, Store b) {
-        float cp1 = crossProduct(b, a, p1, a);
-        float cp2 = crossProduct(b, a, p2, a);
+        double cp1 = crossProduct(b, a, p1, a);
+        double cp2 = crossProduct(b, a, p2, a);
         return cp1 * cp2 > 0;
     }
 
     public boolean onLine(Store p1, Store a, Store b) {
-        return crossProduct(b, a, p1, a) < 0.001;
+        //System.out.println(crossProduct(b, a, p1, a));
+        return crossProduct(b, a, p1, a) < 0.001 && crossProduct(b, a, p1, a) > -0.001 && ((a.x <= p1.x && p1.x <= b.x) || (b.x <= p1.x && p1.x <= a.x));
     }
 
     public boolean pointInTriangle(Store p1, Triangle t) {
@@ -579,18 +968,18 @@ public class GameBoard {
 //        }
 //        return false;
 //    }
-    private boolean intersects(Store s1, Store s2, Line2D.Float l2) {
+    private boolean intersects(Store s1, Store s2, Line2D.Double l2) {
         System.out.println("Intersection:");
         System.out.println("(" + s1.x + "," + s1.y + ")->(" + s2.x + "," + s2.y + ")");
         System.out.println("(" + l2.x1 + "," + l2.y1 + ")->(" + l2.x2 + "," + l2.y2 + ")");
 
         System.out.println(above(s1, l2));
         System.out.println(above(s2, l2));
-        return above(s1, l2) * above(s2, l2) == -1 && l2.intersectsLine(new Line2D.Float(s1.x, s1.y, s2.x, s2.y));
+        return above(s1, l2) * above(s2, l2) == -1 && l2.intersectsLine(new Line2D.Double(s1.x, s1.y, s2.x, s2.y));
 
     }
 
-    private int above(Store s, Line2D.Float l) {
+    private int above(Store s, Line2D.Double l) {
         double a = (l.getY2() - l.getY1()) / (l.getX2() - l.getX1());
 
         if (l.getX2() == l.getX1()) {
@@ -607,9 +996,9 @@ public class GameBoard {
     }
 
     private boolean overlaps(Triangle t1, Triangle t2) {
-        Line2D.Float line0 = new Line2D.Float(t1.s0.x, t1.s0.y, t1.s1.x, t1.s1.y);
-        Line2D.Float line1 = new Line2D.Float(t1.s1.x, t1.s1.y, t1.s2.x, t1.s2.y);
-        Line2D.Float line2 = new Line2D.Float(t1.s2.x, t1.s2.y, t1.s0.x, t1.s0.y);
+        Line2D.Double line0 = new Line2D.Double(t1.s0.x, t1.s0.y, t1.s1.x, t1.s1.y);
+        Line2D.Double line1 = new Line2D.Double(t1.s1.x, t1.s1.y, t1.s2.x, t1.s2.y);
+        Line2D.Double line2 = new Line2D.Double(t1.s2.x, t1.s2.y, t1.s0.x, t1.s0.y);
 
 //        if ((above(t2.s0, line0) * above(t2.s1, line0) == -1) || (above(t2.s1, line0) * above(t2.s2, line0) == -1) || (above(t2.s2, line0) * above(t2.s0, line0) == -1)
 //                || (above(t2.s0, line1) * above(t2.s1, line1) == -1) || (above(t2.s1, line1) * above(t2.s2, line1) != 0) || (above(t2.s2, line1) * above(t2.s0, line1) == -1)
@@ -627,10 +1016,6 @@ public class GameBoard {
 //            return true;
 //        }
 //        return false;
-    }
-
-    private Exception Exception(String leaf_cant_be_null_at_this_point) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     //edges between stores
@@ -667,10 +1052,6 @@ public class GameBoard {
         public Store s1;
         public Store s2;
 
-        public Triangle t0;
-        public Triangle t1;
-        public Triangle t2;
-
         public Triangle n0;
         public Triangle n1;
         public Triangle n2;
@@ -684,12 +1065,12 @@ public class GameBoard {
             children = new ArrayList<>();
         }
 
-        public float calculateArea() {
+        public double calculateArea() {
             double base = Math.sqrt((s1.x - s0.x) * (s1.x - s0.x) + (s1.y - s0.y) * (s1.y - s0.y));
             double base2 = Math.sqrt((s2.x - s0.x) * (s2.x - s0.x) + (s2.y - s0.y) * (s2.y - s0.y));
             double angle = Math.acos(((s1.x - s0.x) * (s2.x - s0.x) + (s1.y - s0.y) * (s2.y - s0.y)) / (base * base2));
             double height = Math.sqrt((s2.x - s0.x) * (s2.x - s0.x) + (s2.y - s0.y) * (s2.y - s0.y)) * Math.sin(angle);
-            return (float) Math.abs(base * height / 2);
+            return Math.abs(base * height / 2);
         }
 
         public Polygon toPolygon() {

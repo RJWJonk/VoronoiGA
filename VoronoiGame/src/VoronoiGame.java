@@ -316,7 +316,7 @@ public class VoronoiGame extends JFrame {
             g.setStroke(new BasicStroke());
 
             g.setColor(new Color(150, 0, 200, 150));
-            Shape s = new Ellipse2D.Float(hx - 5, hy - 5, 10, 10);
+            Shape s = new Ellipse2D.Double(hx - 5, hy - 5, 10, 10);
             g.fill(s);
 
             for (Store store : board.getStores()) {
@@ -326,16 +326,16 @@ public class VoronoiGame extends JFrame {
                     g.setColor(new Color(255, 0, 255, 150));
                 }
 
-                s = new Ellipse2D.Float(store.x - 5, store.y - 5, 10, 10);
+                s = new Ellipse2D.Double(store.x - 5, store.y - 5, 10, 10);
                 g.fill(s);
             }
 
-            g.setColor(new Color(0, 255, 255, 255));
+            g.setColor(new Color(0, 0, 255, 255));
             GameBoard.Triangle t = board.triangulation3;
             if (t != null) {
                 
 
-                g.draw(t.toPolygon());
+                //g.draw(t.toPolygon());
                 ArrayList<GameBoard.Triangle> todo = new ArrayList<>();
                 todo.add(t);
                 while (!todo.isEmpty()) {
@@ -343,8 +343,18 @@ public class VoronoiGame extends JFrame {
                     todo.remove(t);
                     for (GameBoard.Triangle tn : t.children) {
                         if (tn.isLeaf()) {
+                            
                             Polygon p = tn.toPolygon();
+                            Store sd = board.findCenter(tn);
+//                            Store n0 = board.findCenter(tn.n0);
+//                            Store n1 = board.findCenter(tn.n1);
+//                            Store n2 = board.findCenter(tn.n2);
+                            s = new Ellipse2D.Double(sd.x - 5, sd.y - 5, 10, 10);
                             g.draw(p);
+                            //g.draw(s);
+//                            g.drawLine((int)n0.x, (int)n0.y, (int)sd.x, (int)sd.y);
+//                            g.drawLine((int)n1.x, (int)n1.y, (int)sd.x, (int)sd.y);
+//                            g.drawLine((int)n2.x, (int)n2.y, (int)sd.x, (int)sd.y);
                         } else {
                             todo.add(tn);
                         }
@@ -356,7 +366,7 @@ public class VoronoiGame extends JFrame {
 
         private ArrayList<Point> calculatePolygon(Store s) {
             Polygon result = new Polygon();
-            ArrayList<Line2D.Float> lines = new ArrayList<>();
+            ArrayList<Line2D.Double> lines = new ArrayList<>();
 
             ArrayList<GameBoard.Edge> consideredEdges = new ArrayList();
 
@@ -369,17 +379,17 @@ public class VoronoiGame extends JFrame {
                     }
 
                     GameBoard.Edge en = e.next;
-                    float xcc = (e.s1.x + e.s2.x) / 2;
-                    float ycc = (e.s1.y + e.s2.y) / 2;
-                    float ac;
-                    float xcn = (en.s1.x + en.s2.x) / 2;
-                    float ycn = (en.s1.y + en.s2.y) / 2;
-                    float an;
+                    double xcc = (e.s1.x + e.s2.x) / 2;
+                    double ycc = (e.s1.y + e.s2.y) / 2;
+                    double ac;
+                    double xcn = (en.s1.x + en.s2.x) / 2;
+                    double ycn = (en.s1.y + en.s2.y) / 2;
+                    double an;
 
                     if (e.s2.x != e.s1.x && e.s2.y != e.s1.y && en.s2.x != en.s1.x && en.s2.y != en.s1.y) {
                         ac = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
                         ac = -1.0f / ac; //perpendicular
-                        float bc = ycc - ac * xcc;
+                        double bc = ycc - ac * xcc;
 
                     } else if (e.s2.y == e.s1.y) {
 
@@ -395,7 +405,7 @@ public class VoronoiGame extends JFrame {
                 result.addPoint(1, 1);
                 result.addPoint(0, 1);
             }
-            for (Line2D.Float l : lines) {
+            for (Line2D.Double l : lines) {
                 //result.addPoint(0, 0);
                 result.addPoint((int) l.x1, (int) l.y1);
                 result.addPoint((int) l.x2, (int) l.y2);
@@ -547,23 +557,23 @@ public class VoronoiGame extends JFrame {
             //do nothing
         }
 
-        private Line2D.Float findLine(Point pl, Point pr, Point pt, Point pb) {
+        private Line2D.Double findLine(Point pl, Point pr, Point pt, Point pb) {
             if (pl != null) {
                 if (pr != null) {
-                    return new Line2D.Float(pl, pr);
+                    return new Line2D.Double(pl, pr);
                 } else if (pt != null) {
-                    return new Line2D.Float(pl, pt);
+                    return new Line2D.Double(pl, pt);
                 } else {
-                    return new Line2D.Float(pl, pb);
+                    return new Line2D.Double(pl, pb);
                 }
             } else if (pr != null) {
                 if (pt != null) {
-                    return new Line2D.Float(pr, pt);
+                    return new Line2D.Double(pr, pt);
                 } else {
-                    return new Line2D.Float(pr, pb);
+                    return new Line2D.Double(pr, pb);
                 }
             } else {
-                return new Line2D.Float(pt, pb);
+                return new Line2D.Double(pt, pb);
             }
         }
 
