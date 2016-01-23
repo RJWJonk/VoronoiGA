@@ -8,6 +8,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.geom.Line2D;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Stack;
 /*
@@ -80,6 +81,15 @@ public class GameBoard {
         bb3.n2 = b;
         bb3.n1 = bb3x;
         bb3.n0 = bb3y;
+//        bb1.neighbours.add(b);
+//        bb1.neighbours.add(bb1x);
+//        bb1.neighbours.add(bb1y);
+//        bb2.neighbours.add(b);
+//        bb2.neighbours.add(bb2x);
+//        bb2.neighbours.add(bb2y);
+//        bb3.neighbours.add(b);
+//        bb3.neighbours.add(bb3x);
+//        bb3.neighbours.add(bb3y);
 
         triangulation3 = b;
 
@@ -104,6 +114,10 @@ public class GameBoard {
                 }
             }
 
+            System.out.println("LEAF:");
+            System.out.println(leaf.s0);
+            System.out.println(leaf.s1);
+            System.out.println(leaf.s2);
             Triangle new0;
             Triangle new1;
             Triangle new2;
@@ -111,12 +125,36 @@ public class GameBoard {
             new0 = new Triangle(s, leaf.s0, leaf.s1);
             new1 = new Triangle(s, leaf.s1, leaf.s2);
             new2 = new Triangle(s, leaf.s2, leaf.s0);
+//            new0.neighbours.add(new1);
+//            new0.neighbours.add(new2);
+//            new1.neighbours.add(new0);
+//            new1.neighbours.add(new2);
+//            new2.neighbours.add(new1);
+//            new2.neighbours.add(new0);
+
             new0.n0 = new2;
             new0.n2 = new1;
             new1.n0 = new0;
             new1.n2 = new2;
             new2.n0 = new1;
             new2.n2 = new0;
+//            for (Triangle n : leaf.neighbours) {
+//                for (Triangle nn : n.neighbours) {
+//                    if (nn == leaf && shareEdge(new0, n)) {
+//                        n.neighbours.remove(leaf);
+//                        n.neighbours.add(new0);
+//                        new0.neighbours.add(n);
+//                    } else if (nn == leaf && shareEdge(new1, n)) {
+//                        n.neighbours.remove(leaf);
+//                        n.neighbours.add(new1);
+//                        new1.neighbours.add(n);
+//                    } else if (nn == leaf && shareEdge(new2, n)) {
+//                        n.neighbours.remove(leaf);
+//                        n.neighbours.add(new2);
+//                        new2.neighbours.add(n);
+//                    }
+//                }
+//            }
             if (shareEdge(new0, leaf.n0)) {
                 new0.n1 = leaf.n0;
             }
@@ -149,7 +187,7 @@ public class GameBoard {
             leaf.children.add(new1);
             leaf.children.add(new2);
 
-            if (stores.size() > 1) {
+            if (stores.size() > 0) {
                 //flipping
                 Stack<Triangle> flipping = new Stack();
                 flipping.push(new2);
@@ -161,6 +199,17 @@ public class GameBoard {
                     Store fs = findCenter(f);
                     double r = (fs.x - f.s0.x) * (fs.x - f.s0.x) + (fs.y - f.s0.y) * (fs.y - f.s0.y);
                     r = Math.sqrt(r);
+//                    for (Triangle n : f.neighbours) {
+//                        if (inCircle(fs, r, n)) {
+//                            System.out.println("FLIPPING NOW");
+//                            flip(f, n);
+//                            for (Triangle fa : f.children) {
+//                                if (fa != triangulation3) {
+//                                    flipping.push(fa);
+//                                }
+//                            }
+//                        }
+//                    }
                     if (inCircle(fs, r, f.n0)) {
                         System.out.println("FLIPPING NOW");
                         flip(f, f.n0);
@@ -319,59 +368,237 @@ public class GameBoard {
     }
 
     public void flip(Triangle t1, Triangle t2) {
+        
+                System.out.println("FLIP");
+        System.out.println(t2.s0);
+        System.out.println(t2.s1);
+        System.out.println(t2.s2);
+        System.out.println("===");
+        System.out.println(t2.n0.s0);
+        System.out.println(t2.n0.s1);
+        System.out.println(t2.n0.s2);
+        System.out.println("==");
+        System.out.println(t2.n0.s0);
+        System.out.println(t2.n1.s1);
+        System.out.println(t2.n2.s2);
+        System.out.println("==");
+        System.out.println(t2.n0.s0);
+        System.out.println(t2.n1.s1);
+        System.out.println(t2.n2.s2);
+        
         Edge missing = findMissingEdge(t1, t2);
         Edge common = findCommonEdge(t1, t2);
         Triangle new1 = new Triangle(missing.s1, common.s1, missing.s2);
         Triangle new2 = new Triangle(missing.s2, common.s2, missing.s1);
+        boolean changed = makeAntiClockWise(new1) && makeAntiClockWise(new2);
         makeAntiClockWise(new1);
         makeAntiClockWise(new2);
+
+        if (changed) {
+            Triangle temp = new1;
+            new1 = new2;
+            new2 = temp;
+        }
 
         new1.n2 = new2;
         new2.n2 = new1;
 
-        new1.n0 = findNeighbour(new1.s0, new1);
-        if (findNeighbour(new1.s0, new1.n0) == t1) {
-            new1.n0.n0 = new1;
-        }
-        if (findNeighbour(new1.s0, new1.n1) == t1) {
-            new1.n0.n1 = new1;
-        }
-        if (findNeighbour(new1.s0, new1.n2) == t1) {
-            new1.n0.n2 = new1;
-        }
-        new1.n0 = findNeighbour(new1.s0, new1);
-        if (findNeighbour(new1.s0, new1.n0) == t1) {
-            new1.n0.n0 = new1;
-        }
-        if (findNeighbour(new1.s0, new1.n1) == t1) {
-            new1.n0.n1 = new1;
-        }
-        if (findNeighbour(new1.s0, new1.n2) == t1) {
-            new1.n0.n2 = new1;
+        Triangle n;
+
+        int count = 0;
+
+        if (storeInTriangle(new1.s0, t1)) {
+            System.out.println("OKAY?");
+            n = findNeighbour(new1.s0, t1);
+            new1.n0 = n;
+//            System.out.println(n.s0);
+//            System.out.println(n.s1);
+//            System.out.println(n.s2);
+//            System.out.println(t1.s0);
+//            System.out.println(t1.s1);
+//            System.out.println(t1.s2);
+            if (findNeighbour(n.s0, n) == t1) {
+                count++;
+                n.n0 = new1;
+            }
+            if (findNeighbour(n.s1, n) == t1) {
+                count++;
+                n.n1 = new1;
+            }
+            if (findNeighbour(n.s2, n) == t1) {
+                count++;
+                n.n2 = new1;
+            }
+        } else if (storeInTriangle(new1.s0, t2)) {
+            System.out.println("NOT OKAY?");
+            n = findNeighbour(new1.s0, t2);
+            new1.n0 = n;
+            if (findNeighbour(n.s0, n) == t2) {
+                count++;
+                n.n0 = new1;
+            }
+            if (findNeighbour(n.s1, n) == t2) {
+                count++;
+                n.n1 = new1;
+            }
+            if (findNeighbour(n.s2, n) == t2) {
+                count++;
+                n.n2 = new1;
+            }
         }
 
-        if (storeInTriangle(new1.s0, t1.n0) && storeInTriangle(new1.s1, t1.n0)) {
-            new1.n0 = t1.n0;
+        System.out.println("QUARTERWAY COUNT IS " + count);
+
+        if (storeInTriangle(new2.s0, t1)) {
+            System.out.println("NOT OKAY?");
+            n = findNeighbour(new2.s0, t1);
+            new2.n0 = n;
+            if (findNeighbour(n.s0, n) == t1) {
+                count++;
+                n.n0 = new2;
+            }
+            if (findNeighbour(n.s1, n) == t1) {
+                count++;
+                n.n1 = new2;
+            }
+            if (findNeighbour(n.s2, n) == t1) {
+                count++;
+                n.n2 = new2;
+            }
+        } else if (storeInTriangle(new2.s0, t2)) {
+            System.out.println("OKAY?");
+            n = findNeighbour(new2.s0, t2);
+//            System.out.println(n.s0);
+//            System.out.println(n.s1);
+//            System.out.println(n.s2);
+//            System.out.println(t2.s0);
+//            System.out.println(t2.s1);
+//            System.out.println(t2.s2);
+            new2.n0 = n;
+            if (findNeighbour(n.s0, n) == t2) {
+                count++;
+                n.n0 = new2;
+            }
+            if (findNeighbour(n.s1, n) == t2) {
+                count++;
+                n.n1 = new2;
+            }
+            if (findNeighbour(n.s2, n) == t2) {
+                count++;
+                n.n2 = new2;
+            }
         }
+
+        System.out.println("HALFWAY COUNT IS " + count);
+
+        if (findNeighbour(new1.s1, t1) != t2) {
+            n = findNeighbour(new1.s1, t1);
+            new1.n1 = n;
+            if (findNeighbour(n.s0, n) == t1) {
+                count++;
+                n.n0 = new1;
+            }
+            if (findNeighbour(n.s1, n) == t1) {
+                count++;
+                n.n1 = new1;
+            }
+            if (findNeighbour(n.s2, n) == t1) {
+                count++;
+                n.n2 = new1;
+            }
+        } else {
+            n = findNeighbour(new1.s1, t2);
+            new1.n1 = n;
+            if (findNeighbour(n.s0, n) == t2) {
+                count++;
+                n.n0 = new1;
+            }
+            if (findNeighbour(n.s1, n) == t2) {
+                count++;
+                n.n1 = new1;
+            }
+            if (findNeighbour(n.s2, n) == t2) {
+                count++;
+                n.n2 = new1;
+            }
+        }
+
+        System.out.println("THREE QUARTER WAY COUNT IS " + count);
+
+        if (findNeighbour(new1.s1, t1) != t2) {
+            n = findNeighbour(new1.s1, t1);
+            new1.n1 = n;
+            if (findNeighbour(n.s0, n) == t1) {
+                count++;
+                n.n0 = new1;
+            }
+            if (findNeighbour(n.s1, n) == t1) {
+                count++;
+                n.n1 = new1;
+            }
+            if (findNeighbour(n.s2, n) == t1) {
+                count++;
+                n.n2 = new1;
+            }
+        } else {
+            n = findNeighbour(new2.s1, t2);
+            new2.n1 = n;
+            if (findNeighbour(n.s0, n) == t2) {
+                count++;
+                n.n0 = new2;
+            }
+            if (findNeighbour(n.s1, n) == t2) {
+                count++;
+                n.n1 = new2;
+            }
+            if (findNeighbour(n.s2, n) == t2) {
+                count++;
+                n.n2 = new2;
+            }
+        }
+
+        System.out.println("COUNT IS " + count);
+        t1.children.add(new1);
+        t1.children.add(new2);
+        t2.children.add(new1);
+        t2.children.add(new2);
 
     }
 
     public Triangle findNeighbour(Store s, Triangle t) {
         if (!storeInTriangle(s, t)) {
+            System.out.println("Well..");
             return null;
         }
+//        System.out.println("FIND NEIGHBOUR");
+//        System.out.println(t.s0);
+//        System.out.println(t.s1);
+//        System.out.println(t.s2);
+//        System.out.println("===");
+//        System.out.println(t.n0.s0);
+//        System.out.println(t.n0.s1);
+//        System.out.println(t.n0.s2);
+//        System.out.println("==");
+//        System.out.println(t.n0.s0);
+//        System.out.println(t.n1.s1);
+//        System.out.println(t.n2.s2);
+//        System.out.println("==");
+//        System.out.println(t.n0.s0);
+//        System.out.println(t.n1.s1);
+//        System.out.println(t.n2.s2);
 
         return s == t.s0 ? t.n0 : (s == t.s1 ? t.n1 : t.n2);
 
     }
 
-    public void makeAntiClockWise(Triangle t) {
+    public boolean makeAntiClockWise(Triangle t) {
         if (left_turn(t.s0, t.s1, t.s2)) {
-            //done
+            return false;
         } else {
-            Store temp = t.s1;
-            t.s1 = t.s2;
+            Store temp = t.s0;
+            t.s0 = t.s2;
             t.s2 = temp;
+            return true;
         }
     }
 
@@ -1057,12 +1284,14 @@ public class GameBoard {
         public Triangle n2;
 
         public ArrayList<Triangle> children;
+        public ArrayList<Triangle> neighbours;
 
         public Triangle(Store s0, Store s1, Store s2) {
             this.s0 = s0;
             this.s1 = s1;
             this.s2 = s2;
             children = new ArrayList<>();
+            neighbours = new ArrayList<>();
         }
 
         public double calculateArea() {
