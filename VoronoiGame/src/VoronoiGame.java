@@ -20,6 +20,7 @@ import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -227,6 +228,10 @@ public class VoronoiGame extends JFrame {
         int budget1 = 8;
         int budget2 = budget1;
 
+        //player area
+        double area0 = 1;
+        double area1 = 1;
+
         Dimension preferred = new Dimension(600, 600);
 
         private GameBoardPanel() {
@@ -276,7 +281,7 @@ public class VoronoiGame extends JFrame {
             f = new Font("Times New Roman", Font.BOLD, 25);
             g.setFont(f);
             g.drawString("$" + budget1, x + 10, y + 55);
-            g.drawString("49%", x + 65, y + 55);
+            g.drawString(100 * area0 / (area0 + area1) + "%", x + 65, y + 55);
 
             //draw player 2 score
             f = new Font("Times New Roman", Font.BOLD, 15);
@@ -293,7 +298,7 @@ public class VoronoiGame extends JFrame {
             f = new Font("Times New Roman", Font.BOLD, 25);
             g.setFont(f);
             g.drawString("$" + budget2, x + 10, y + 55);
-            g.drawString("51%", x + 65, y + 55);
+            g.drawString(100 * area1 / (area0 + area1) + "%", x + 65, y + 55);
 
             //draw gameboard
             width = bs;
@@ -333,7 +338,6 @@ public class VoronoiGame extends JFrame {
             g.setColor(new Color(0, 0, 255, 255));
             GameBoard.Triangle t = board.triangulation3;
             if (t != null) {
-                
 
                 //g.draw(t.toPolygon());
                 ArrayList<GameBoard.Triangle> todo = new ArrayList<>();
@@ -343,14 +347,14 @@ public class VoronoiGame extends JFrame {
                     todo.remove(t);
                     for (GameBoard.Triangle tn : t.children) {
                         if (tn.isLeaf()) {
-                            
+
                             Polygon p = tn.toPolygon();
                             Store sd = board.findCenter(tn);
 //                            Store n0 = board.findCenter(tn.n0);
 //                            Store n1 = board.findCenter(tn.n1);
 //                            Store n2 = board.findCenter(tn.n2);
                             s = new Ellipse2D.Double(sd.x - 5, sd.y - 5, 10, 10);
-                            g.draw(p);
+                            // g.draw(p);
                             //g.draw(s);
 //                            g.drawLine((int)n0.x, (int)n0.y, (int)sd.x, (int)sd.y);
 //                            g.drawLine((int)n1.x, (int)n1.y, (int)sd.x, (int)sd.y);
@@ -362,6 +366,54 @@ public class VoronoiGame extends JFrame {
                 }
             }
 
+                        bs = new BasicStroke(2);
+            g.setStroke(bs);
+            g.setColor(new Color(255, 0, 0, 255));
+            //draw the voronoi
+            area0 = 0;
+            area1 = 0;
+            GameBoard.Triangle leaf = board.triangulation3;
+            if (leaf != null) {
+                while (!leaf.isLeaf()) {
+                    leaf = leaf.children.get(0);
+                }
+
+                ArrayList<GameBoard.Triangle> todo = new ArrayList<>();
+                HashSet<GameBoard.Triangle> done = new HashSet<>();
+
+                todo.add(leaf);
+
+                while (!todo.isEmpty()) {
+                    GameBoard.Triangle tr = todo.get(0);
+                    //System.out.println(tr);
+                    todo.remove(0);
+                    done.add(tr);
+                    Store vor = board.findCenter(tr);
+                    Store vor0 = null, vor1 = null, vor2 = null;
+                    if (tr.n0 != null) {
+                        vor0 = board.findCenter(tr.n0);
+                        if (!todo.contains(tr.n0) && !done.contains(tr.n0)) {
+                            todo.add(tr.n0);
+                        }
+                        g.drawLine((int) vor.x, (int) vor.y, (int) vor0.x, (int) vor0.y);
+                    }
+                    if (tr.n1 != null) {
+                        vor1 = board.findCenter(tr.n1);
+                        if (!todo.contains(tr.n1) && !done.contains(tr.n1)) {
+                            todo.add(tr.n1);
+                        }
+                        g.drawLine((int) vor.x, (int) vor.y, (int) vor1.x, (int) vor1.y);
+                    }
+                    if (tr.n2 != null) {
+                        vor2 = board.findCenter(tr.n2);
+                        if (!todo.contains(tr.n2) && !done.contains(tr.n2)) {
+                            todo.add(tr.n2);
+                        }
+                        g.drawLine((int) vor.x, (int) vor.y, (int) vor2.x, (int) vor2.y);
+                    }
+                }
+            }
+            g.setStroke(new BasicStroke());
         }
 
         private ArrayList<Point> calculatePolygon(Store s) {

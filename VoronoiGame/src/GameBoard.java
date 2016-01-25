@@ -104,9 +104,18 @@ public class GameBoard {
 //        System.out.println(nn4.n2);
     }
 
+    private boolean overlapStores(Triangle t1, Triangle t2) {
+        if (t1 == null || t2 == null) {
+            return false;
+        }
+        return (t1.s0 == t2.s0 || t1.s0 == t2.s1 || t1.s0 == t2.s2
+                || t1.s1 == t2.s0 || t1.s1 == t2.s1 || t1.s1 == t2.s2
+                || t1.s2 == t2.s0 || t1.s2 == t2.s1 || t1.s2 == t2.s2);
+    }
+
     private void calculateTriangulation() {
         Store b1 = new Store(-1000, 100, -1);
-        Store b2 = new Store(300, 100000000, -1);
+        Store b2 = new Store(300, 1000, -1);
         Store b3 = new Store(1000, 100, -1);
 
         //additional points for neighbours of initial triangle
@@ -294,6 +303,9 @@ public class GameBoard {
                     Triangle f = flipping.pop();
                     Store fs = findCenter(f);
                     double r = (fs.x - f.s0.x) * (fs.x - f.s0.x) + (fs.y - f.s0.y) * (fs.y - f.s0.y);
+//                    if (overlapStores(f, b)) {
+//                        r = Double.MAX_VALUE;
+//                    }
                     r = Math.sqrt(r);
 //                    for (Triangle n : f.neighbours) {
 //                        if (inCircle(fs, r, n)) {
@@ -310,7 +322,7 @@ public class GameBoard {
                         System.out.println("FLIPPING NOW");
                         flip(f, f.n0);
                         for (Triangle fa : f.children) {
-                            if (fa.n0 != triangulation3) {
+                            if (!overlapStores(fa, b)) {
                                 System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
@@ -319,7 +331,7 @@ public class GameBoard {
                         System.out.println("FLIPPING NOW");
                         flip(f, f.n1);
                         for (Triangle fa : f.children) {
-                            if (fa != triangulation3) {
+                            if (!overlapStores(fa, b)) {
                                 System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
@@ -328,7 +340,7 @@ public class GameBoard {
                         System.out.println("FLIPPING NOW");
                         flip(f, f.n2);
                         for (Triangle fa : f.children) {
-                            if (fa != triangulation3) {
+                            if (!overlapStores(fa, b)) {
                                 System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
@@ -960,30 +972,30 @@ public class GameBoard {
 
     public boolean inCircle(Store center, double r, Triangle t) {
         if (t == null) {
-            System.out.println("null");
+            //System.out.println("null");
             return false;
         }
-        System.out.println("%===INCIRCLE===%");
-        System.out.println(center);
-        System.out.println(t.s0);
-        System.out.println(t.s1);
-        System.out.println(t.s2);
+//        System.out.println("%===INCIRCLE===%");
+//        System.out.println(center);
+//        System.out.println(t.s0);
+//        System.out.println(t.s1);
+//        System.out.println(t.s2);
         double d0 = (t.s0.x - center.x) * (t.s0.x - center.x) + (t.s0.y - center.y) * (t.s0.y - center.y);
         double d1 = (t.s1.x - center.x) * (t.s1.x - center.x) + (t.s1.y - center.y) * (t.s1.y - center.y);
         double d2 = (t.s2.x - center.x) * (t.s2.x - center.x) + (t.s2.y - center.y) * (t.s2.y - center.y);
         d0 = Math.sqrt(d0);
         d1 = Math.sqrt(d1);
         d2 = Math.sqrt(d2);
-        System.out.println("====");
-        System.out.println(r);
-        System.out.println(d0);
-        System.out.println(d1);
-        System.out.println(d2);
+//        System.out.println("====");
+//        System.out.println(r);
+//        System.out.println(d0);
+//        System.out.println(d1);
+//        System.out.println(d2);
         double d = d0 < d1 ? (d2 < d0 ? d2 : d0) : (d2 < d1 ? d2 : d1);
-        System.out.println(d);
-        System.out.println(d < r * 0.999);
-        System.out.println(r);
-        System.out.println(d);
+//        System.out.println(d);
+//        System.out.println(d < r * 0.999);
+//        System.out.println(r);
+//        System.out.println(d);
         return d < r * 0.999;
     }
 

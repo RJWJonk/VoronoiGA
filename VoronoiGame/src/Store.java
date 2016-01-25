@@ -32,4 +32,8 @@ public class Store {
     public String toString() {
         return "(" + x + "," + y + ")";
     }
+    
+    public Double distanceTo(Store s) {
+        return Math.sqrt((s.x-x)*(s.x-x)+(s.y-y)*(s.y-y));
+    }
 }
