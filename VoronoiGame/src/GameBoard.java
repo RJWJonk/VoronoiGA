@@ -1082,16 +1082,18 @@ public class GameBoard {
         return null;
     }
 
-    public boolean isLocalDelaunay(Edge e) {
+    public boolean isLocalDelaunay(Triangle t1, Triangle t2) {
+        Edge e = findCommonEdge(t1, t2);
+        Edge e0 = findMissingEdge(t1, t2);
 
-        if (e.twin == null) {
+        if (e == null) {
             return true;
         }
 
         Store p = e.s1;
         Store q = e.s2;
-        Store r = e.next.s1 == e.s1 || e.next.s1 == e.s2 ? e.next.s2 : e.next.s1;
-        Store s = e.twin.next.s1 == e.s1 || e.twin.next.s1 == e.next.s2 ? e.twin.next.s2 : e.next.s1;
+        Store r = e0.s1;
+        Store s = e0.s2;
 
         return (signDet3(p, q, r) * signDet4(p, q, r, s) > 0);
 
@@ -1128,27 +1130,27 @@ public class GameBoard {
     private double det(double a, double b, double c, double d) {
         return (a * d - b * c);
     }
-
-    private void flipEdges() {
-        calculateTwins();
-        boolean changed = true;
-        while (changed) {
-            //System.out.println("hello");
-            changed = false;
-            for (int i = 0; i < triangulation.size(); i++) {
-                Edge ei = triangulation.get(i);//need to be fix
-                System.out.println("local? " + isLocalDelaunay(ei));
-                if (!isLocalDelaunay(ei)) {
-                    changed = true;
-                    System.out.println("actual flipping");
-                    edgeFlip(ei);
-
-                }
-            }
-        }
-
-        //todo: modifies the triangulation to the delaunay triangulation
-    }
+//
+//    private void flipEdges() {
+//        calculateTwins();
+//        boolean changed = true;
+//        while (changed) {
+//            //System.out.println("hello");
+//            changed = false;
+//            for (int i = 0; i < triangulation.size(); i++) {
+//                Edge ei = triangulation.get(i);//need to be fix
+//                System.out.println("local? " + isLocalDelaunay(ei));
+//                if (!isLocalDelaunay(ei)) {
+//                    changed = true;
+//                    System.out.println("actual flipping");
+//                    edgeFlip(ei);
+//
+//                }
+//            }
+//        }
+//
+//        //todo: modifies the triangulation to the delaunay triangulation
+//    }
 
     private void edgeFlip(Edge e) {
         //todo: the mothed to do edge flip
@@ -1217,7 +1219,7 @@ public class GameBoard {
         Store s = new Store(x, y, o);
         addStore(s);
         calculateTriangulation();
-        flipEdges();
+//        flipEdges();
     }
 
     //add a store to the data set and recalculate the triangulation
