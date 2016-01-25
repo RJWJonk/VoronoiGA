@@ -24,8 +24,8 @@ public class Store {
 
     public Store(double x, double y, int owner) {
         Random random = new Random();
-        this.x = x + (random.nextDouble()-0.5f)/100;
-        this.y = y + (random.nextDouble()-0.5f)/100;
+        this.x = x;// + (random.nextDouble()-0.5f)/100;
+        this.y = y;// + (random.nextDouble()-0.5f)/1000000;
         this.owner = owner;
     }
 

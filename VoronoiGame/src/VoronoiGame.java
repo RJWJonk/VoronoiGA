@@ -281,7 +281,7 @@ public class VoronoiGame extends JFrame {
             f = new Font("Times New Roman", Font.BOLD, 25);
             g.setFont(f);
             g.drawString("$" + budget1, x + 10, y + 55);
-            g.drawString(100 * area0 / (area0 + area1) + "%", x + 65, y + 55);
+            g.drawString((int) (100 * area0 / (area0 + area1)) + "%", x + 65, y + 55);
 
             //draw player 2 score
             f = new Font("Times New Roman", Font.BOLD, 15);
@@ -298,7 +298,7 @@ public class VoronoiGame extends JFrame {
             f = new Font("Times New Roman", Font.BOLD, 25);
             g.setFont(f);
             g.drawString("$" + budget2, x + 10, y + 55);
-            g.drawString(100 * area1 / (area0 + area1) + "%", x + 65, y + 55);
+            g.drawString((int) (100 * area1 / (area0 + area1)) + "%", x + 65, y + 55);
 
             //draw gameboard
             width = bs;
@@ -312,8 +312,8 @@ public class VoronoiGame extends JFrame {
 
             //draw triangulation
             g.setColor(new Color(0, 0, 0, 255));
-            BasicStroke bs = new BasicStroke(3);
-            g.setStroke(bs);
+            BasicStroke stroke = new BasicStroke(3);
+            g.setStroke(stroke);
             for (GameBoard.Triangle t : board.geTriangulation()) {
                 Polygon p = t.toPolygon();
                 g.draw(p);
@@ -354,7 +354,7 @@ public class VoronoiGame extends JFrame {
 //                            Store n1 = board.findCenter(tn.n1);
 //                            Store n2 = board.findCenter(tn.n2);
                             s = new Ellipse2D.Double(sd.x - 5, sd.y - 5, 10, 10);
-                            // g.draw(p);
+                            //g.draw(p);
                             //g.draw(s);
 //                            g.drawLine((int)n0.x, (int)n0.y, (int)sd.x, (int)sd.y);
 //                            g.drawLine((int)n1.x, (int)n1.y, (int)sd.x, (int)sd.y);
@@ -366,9 +366,9 @@ public class VoronoiGame extends JFrame {
                 }
             }
 
-                        bs = new BasicStroke(2);
-            g.setStroke(bs);
-            g.setColor(new Color(255, 0, 0, 255));
+            stroke = new BasicStroke(2);
+            g.setStroke(stroke);
+            g.setColor(new Color(255, 0, 0, 50));
             //draw the voronoi
             area0 = 0;
             area1 = 0;
@@ -390,30 +390,188 @@ public class VoronoiGame extends JFrame {
                     done.add(tr);
                     Store vor = board.findCenter(tr);
                     Store vor0 = null, vor1 = null, vor2 = null;
+                    Store vor0a = null, vor1a = null, vor2a = null;
                     if (tr.n0 != null) {
                         vor0 = board.findCenter(tr.n0);
+                        translateVoronoi(vor0, vor);
+                        vor0a = new Store(vor.x, vor.y, -1);
+                        translateVoronoi(vor0a, vor0);
                         if (!todo.contains(tr.n0) && !done.contains(tr.n0)) {
                             todo.add(tr.n0);
                         }
-                        g.drawLine((int) vor.x, (int) vor.y, (int) vor0.x, (int) vor0.y);
+                        g.drawLine((int) vor0a.x, (int) vor0a.y, (int) vor0.x, (int) vor0.y);
                     }
                     if (tr.n1 != null) {
                         vor1 = board.findCenter(tr.n1);
+                        translateVoronoi(vor1, vor);
+                        vor1a = new Store(vor.x, vor.y, -1);
+                        translateVoronoi(vor1a, vor1);
                         if (!todo.contains(tr.n1) && !done.contains(tr.n1)) {
                             todo.add(tr.n1);
                         }
-                        g.drawLine((int) vor.x, (int) vor.y, (int) vor1.x, (int) vor1.y);
+                        g.drawLine((int) vor1a.x, (int) vor1a.y, (int) vor1.x, (int) vor1.y);
                     }
                     if (tr.n2 != null) {
                         vor2 = board.findCenter(tr.n2);
+                        translateVoronoi(vor2, vor);
+                        vor2a = new Store(vor.x, vor.y, -1);
+                        translateVoronoi(vor2a, vor2);
                         if (!todo.contains(tr.n2) && !done.contains(tr.n2)) {
                             todo.add(tr.n2);
                         }
-                        g.drawLine((int) vor.x, (int) vor.y, (int) vor2.x, (int) vor2.y);
+                        g.drawLine((int) vor2a.x, (int) vor2a.y, (int) vor2.x, (int) vor2.y);
+                    }
+
+//                    if ((vor0 != null && vor0.x > bx + bs) || (vor1 != null && vor1.x > bx + bs) || (vor2 != null && vor2.x > bx + bs)) {
+//                        System.out.println("voru problem!");
+//                    }
+                    //areas
+                    if (tr.s0.owner == 0) {
+                        g.setColor(new Color(255, 0, 0, 50));
+                        if (vor0 != null) {
+                            area0 += 1d / 8 * tr.s0.distanceTo(tr.s1) * vor0a.distanceTo(vor0);
+                            Polygon p = new Polygon(new int[]{(int) tr.s0.x, (int) vor0a.x, (int) vor0.x}, new int[]{(int) tr.s0.y, (int) vor0a.y, (int) vor0.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor2 != null) {
+                            area0 += 1d / 8 * tr.s0.distanceTo(tr.s2) * vor2a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s0.x, (int) vor2a.x, (int) vor2.x}, new int[]{(int) tr.s0.y, (int) vor2a.y, (int) vor2.y}, 3);
+                            g.fill(p);
+                        }
+                    } else {
+                        g.setColor(new Color(0, 255, 0, 50));
+                        if (vor0 != null) {
+                            area1 += 1d / 8 * tr.s0.distanceTo(tr.s1) * vor0a.distanceTo(vor0);
+                            Polygon p = new Polygon(new int[]{(int) tr.s0.x, (int) vor0a.x, (int) vor0.x}, new int[]{(int) tr.s0.y, (int) vor0a.y, (int) vor0.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor2 != null) {
+                            area1 += 1d / 8 * tr.s0.distanceTo(tr.s2) * vor2a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s0.x, (int) vor2a.x, (int) vor2.x}, new int[]{(int) tr.s0.y, (int) vor2a.y, (int) vor2.y}, 3);
+                            g.fill(p);
+                        }
+                    }
+
+                    if (tr.s1.owner == 0) {
+                        g.setColor(new Color(255, 0, 0, 50));
+                        if (vor1 != null) {
+                            area0 += 1d / 8 * tr.s1.distanceTo(tr.s2) * vor1a.distanceTo(vor1);
+                            Polygon p = new Polygon(new int[]{(int) tr.s1.x, (int) vor1a.x, (int) vor1.x}, new int[]{(int) tr.s1.y, (int) vor1a.y, (int) vor1.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor0 != null) {
+                            area0 += 1d / 8 * tr.s1.distanceTo(tr.s0) * vor0a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s1.x, (int) vor0a.x, (int) vor0.x}, new int[]{(int) tr.s1.y, (int) vor0a.y, (int) vor0.y}, 3);
+                            g.fill(p);
+                        }
+                    } else {
+                        g.setColor(new Color(0, 255, 0, 50));
+                        if (vor1 != null) {
+                            area1 += 1d / 8 * tr.s1.distanceTo(tr.s2) * vor1a.distanceTo(vor1);
+                            Polygon p = new Polygon(new int[]{(int) tr.s1.x, (int) vor1a.x, (int) vor1.x}, new int[]{(int) tr.s1.y, (int) vor1a.y, (int) vor1.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor0 != null) {
+                            area1 += 1d / 8 * tr.s1.distanceTo(tr.s0) * vor0a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s1.x, (int) vor0a.x, (int) vor0.x}, new int[]{(int) tr.s1.y, (int) vor0a.y, (int) vor0.y}, 3);
+                            g.fill(p);
+                        }
+                    }
+
+                    if (tr.s2.owner == 0) {
+                        g.setColor(new Color(255, 0, 0, 50));
+                        if (vor2 != null) {
+                            area0 += 1d / 8 * tr.s2.distanceTo(tr.s0) * vor2a.distanceTo(vor1);
+                            Polygon p = new Polygon(new int[]{(int) tr.s2.x, (int) vor2a.x, (int) vor2.x}, new int[]{(int) tr.s2.y, (int) vor2a.y, (int) vor2.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor1 != null) {
+                            area0 += 1d / 8 * tr.s2.distanceTo(tr.s1) * vor1a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s2.x, (int) vor1a.x, (int) vor1.x}, new int[]{(int) tr.s2.y, (int) vor1a.y, (int) vor1.y}, 3);
+                            g.fill(p);
+                        }
+                    } else {
+                        g.setColor(new Color(0, 255, 0, 50));
+                        if (vor2 != null) {
+                            area1 += 1d / 8 * tr.s2.distanceTo(tr.s0) * vor2a.distanceTo(vor2);
+                            Polygon p = new Polygon(new int[]{(int) tr.s2.x, (int) vor2a.x, (int) vor2.x}, new int[]{(int) tr.s2.y, (int) vor2a.y, (int) vor2.y}, 3);
+                            g.fill(p);
+                        }
+                        if (vor1 != null) {
+                            area1 += 1d / 8 * tr.s2.distanceTo(tr.s1) * vor1a.distanceTo(vor1);
+                            Polygon p = new Polygon(new int[]{(int) tr.s2.x, (int) vor1a.x, (int) vor1.x}, new int[]{(int) tr.s2.y, (int) vor1a.y, (int) vor1.y}, 3);
+                            g.fill(p);
+                        }
                     }
                 }
             }
+//            System.out.println("==AREAS==");
+//            System.out.println(area0);
+//            System.out.println(area1);
             g.setStroke(new BasicStroke());
+        }
+
+        private void translateXVoronoi(Store s, Store ref) {
+            double a = (ref.y - s.y) / (ref.x - s.x);
+
+            if (s.x < bx) {
+                s.y = s.y + a * (bx - s.x);
+                s.x = bx;
+            }
+            if (s.x > bx + bs) {
+                s.y = s.y + a * ((bx + bs) - s.x);
+                s.x = (bx + bs);
+            }
+        }
+
+        //x within bounds, stays within bounds!
+        private void translateYVoronoi(Store s, Store ref) {
+
+            double a = (ref.x - s.x) / (ref.y - s.y);
+
+            if (s.y < by) {
+                s.x = s.x + a * (by - s.y);
+                s.y = by;
+            }
+            if (s.y > by + bs) {
+                s.x = s.x + a * ((by + bs) - s.y);
+                s.y = (by + bs);
+            }
+
+            if (s.x < bx || s.x > bx + bs) {
+                s = null;
+            }
+
+//            double a = (ref.y - s.y) / (ref.x - s.x);
+//
+//            if (s.y < by) {
+//                double dx = -(by - s.y) / a;
+//                s.y = by;
+//                s.x += dx;
+//            }
+//            if (s.y > by + bs) {
+//                double dx = (s.y - (by + bs)) / a;
+//                s.y = by + bs;
+//                s.y += dx;
+//            }
+//
+//            if (s.x < bx || s.x > bx + bs) {
+//                //not in the playing field
+//                s = null;
+//            }
+//            if (s.y < by) {
+//                s.x = s.x + a * (by - s.y);
+//                s.y = by;
+//            }
+//            if (s.y > by + bs) {
+//                s.x = s.x + a * ((by + bs) - s.y);
+//                s.y = (by + bs);
+//            }
+        }
+
+        private void translateVoronoi(Store s, Store ref) {
+            translateXVoronoi(s, ref);
+            translateYVoronoi(s, ref);
         }
 
         private ArrayList<Point> calculatePolygon(Store s) {
@@ -583,11 +741,12 @@ public class VoronoiGame extends JFrame {
         @Override
         public void mousePressed(MouseEvent e) {
             if (board.getStoreAt(hx, hy) == null) {
+                Random random = new Random();
                 if (turn == 0 && budget1 > 0) {
-                    board.addStore(hx, hy, turn);
+                    board.addStore(hx + (random.nextDouble() - 0.5f) / 100, hy + (random.nextDouble() - 0.5f) / 100, turn);
                     budget1 -= 1;
                 } else if (turn == 1 && budget2 > 0) {
-                    board.addStore(hx, hy, turn);
+                    board.addStore(hx + (random.nextDouble() - 0.5f) / 100, hy + (random.nextDouble() - 0.5f) / 100, turn);
                     budget2 -= 1;
                 }
                 turn = (turn + 1) % 2;

@@ -116,7 +116,7 @@ public class GameBoard {
     private void calculateTriangulation() {
         Store b1 = new Store(-1000, 100, -1);
         Store b2 = new Store(300, 1000, -1);
-        Store b3 = new Store(1000, 100, -1);
+        Store b3 = new Store(1000, 99, -1);
 
         //additional points for neighbours of initial triangle
         Store nb1 = new Store(-300000, 90000, -1);
@@ -318,30 +318,24 @@ public class GameBoard {
 //                            }
 //                        }
 //                    }
-                    if (inCircle(fs, r, f.n0)) {
-                        System.out.println("FLIPPING NOW");
+                    if (isLocalDelaunay(f, f.n0)) {
                         flip(f, f.n0);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
-                                System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
                         }
-                    } else if (inCircle(fs, r, f.n1)) {
-                        System.out.println("FLIPPING NOW");
+                    } else if (isLocalDelaunay(f, f.n1)) {
                         flip(f, f.n1);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
-                                System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
                         }
-                    } else if (inCircle(fs, r, f.n2)) {
-                        System.out.println("FLIPPING NOW");
+                    } else if (isLocalDelaunay(f, f.n0)) {
                         flip(f, f.n2);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
-                                System.out.println("PROPAGATE");
                                 flipping.push(fa);
                             }
                         }
@@ -1083,6 +1077,10 @@ public class GameBoard {
     }
 
     public boolean isLocalDelaunay(Triangle t1, Triangle t2) {
+        if (t1 == null || t2 == null) {
+            return false;
+        }
+
         Edge e = findCommonEdge(t1, t2);
         Edge e0 = findMissingEdge(t1, t2);
 
@@ -1119,7 +1117,7 @@ public class GameBoard {
                 + det(p.x, p.y, q.x, q.y) * det(1, rz, 1, sz)
                 - det(p.x, pz, q.x, qz) * det(1, r.y, 1, s.y)
                 + det(p.y, pz, q.y, qz) * det(1, r.x, 1, s.x);
-        System.out.println(x);
+       // System.out.println(x);
         if (x > 0) {
             return (1);
         } else {
@@ -1215,7 +1213,7 @@ public class GameBoard {
         return null;
     }
 
-    public void addStore(int x, int y, int o) {
+    public void addStore(double x, double y, int o) {
         Store s = new Store(x, y, o);
         addStore(s);
         calculateTriangulation();
@@ -1237,6 +1235,7 @@ public class GameBoard {
 
     public Store getStoreAt(int x, int y) {
         for (Store s : stores) {
+           // if (s.x - 0.1f < x && s.x + 0.1f > x && s.y - 0.1f < y && s.y + 0.1f > y) {
             if (s.x == x && s.y == y) {
                 return s;
             }
