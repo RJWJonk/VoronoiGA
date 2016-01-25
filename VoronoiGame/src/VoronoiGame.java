@@ -34,19 +34,17 @@ import javax.swing.Timer;
  */
 public class VoronoiGame extends JFrame {
 
-    private final int MENU_MAIN = 0;
-    private final int MENU_GAME = 1;
-    private final int MENU_OPTIONS = 2;
-    private final int MENU_CREDITS = 3;
-
-    private final int INPUT_MOUSE = 0;
-    private final int INPUT_KEYBOARD = 1;
-
+//    private final int MENU_MAIN = 0;
+//    private final int MENU_GAME = 1;
+//    private final int MENU_HOWTO = 2;
+//    private final int MENU_ALGO = 3;
+//    private final int INPUT_MOUSE = 0;
+//    private final int INPUT_KEYBOARD = 1;
     private JPanel activePanel;
 
     private JPanel mainPanel;
-    private JPanel optionsPanel;
-    private JPanel creditsPanel;
+    private JPanel howtoPanel;
+    private JPanel algoPanel;
     private JPanel gamePanel;
 
     public static void main(String[] args) {
@@ -84,8 +82,8 @@ public class VoronoiGame extends JFrame {
         contentPane.setLayout(new BorderLayout());
 
         mainPanel = new MainMenu();
-        optionsPanel = new OptionsMenu();
-        creditsPanel = new CreditsMenu();
+        howtoPanel = new HowTo();
+        algoPanel = new AlgoPanel();
         //gamePanel = new GameBoardPanel();
 
         activePanel = mainPanel;
@@ -97,8 +95,8 @@ public class VoronoiGame extends JFrame {
 
     private class MainMenu extends JPanel {
 
-        JButton optionsButton;
-        JButton creditsButton;
+        JButton howtoButton;
+        JButton algoButton;
         JButton gameButton;
 
         Dimension preferred = new Dimension(600, 600);
@@ -107,27 +105,27 @@ public class VoronoiGame extends JFrame {
             this.setLayout(null);
             this.setPreferredSize(preferred);
 
-            optionsButton = new JButton("Options");
-            optionsButton.setBounds(250, 200, 100, 40);
-            optionsButton.addActionListener(new ActionListener() {
+            howtoButton = new JButton("How to play");
+            howtoButton.setBounds(250, 200, 100, 40);
+            howtoButton.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     VoronoiGame.this.remove(activePanel);
-                    activePanel = optionsPanel;
+                    activePanel = howtoPanel;
                     VoronoiGame.this.add(activePanel);
                     VoronoiGame.this.validate();
                     //VoronoiGame.this.setSize(606,628);
                 }
             });
-            creditsButton = new JButton("Credits");
-            creditsButton.setBounds(250, 250, 100, 40);
-            creditsButton.addActionListener(new ActionListener() {
+            algoButton = new JButton("Algorithm");
+            algoButton.setBounds(250, 250, 100, 40);
+            algoButton.addActionListener(new ActionListener() {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     activePanel.getParent().remove(activePanel);
-                    VoronoiGame.this.activePanel = creditsPanel;
+                    VoronoiGame.this.activePanel = algoPanel;
                     VoronoiGame.this.add(activePanel);
                     VoronoiGame.this.validate();
                 }
@@ -144,20 +142,20 @@ public class VoronoiGame extends JFrame {
                     VoronoiGame.this.validate();
                 }
             });
-            this.add(optionsButton);
-            this.add(creditsButton);
+            this.add(howtoButton);
+            this.add(algoButton);
             this.add(gameButton);
         }
 
     }
 
-    private class OptionsMenu extends JPanel {
+    private class HowTo extends JPanel {
 
         JButton backButton;
 
         Dimension preferred = new Dimension(600, 600);
 
-        private OptionsMenu() {
+        private HowTo() {
             this.setLayout(null);
             this.setPreferredSize(preferred);
 
@@ -178,18 +176,55 @@ public class VoronoiGame extends JFrame {
 
     }
 
-    private class CreditsMenu extends JPanel {
+    private class AlgoPanel extends JPanel {
 
         JButton backButton;
+        JButton nextButton;
+        JButton prevButton;
+
+        String[] text = new String[]{
+            "              Geometric Concept\n \n "
+            + "A Voronoi diagram is a partitioning of a plane into regions based on distance\n "
+            + "to vertices (stores) that were placed on the plane. For every store placed on\n "
+            + "the playing field, we define a region such that for every point in that region,\n "
+            + "the store in that region is the closest store. These regions are called Voronoi\n "
+            + "cells and what we calculate are exactly the areas of these Voronoi cells.",
+            " Another interesting concept of this game is Delaunay triangulation, because the\n "
+            + "Voronoi diagram of a set of stores is dual to its Delaunay triangulation.\n\n "
+            + "A Delaunay triangulation for a set of stores in a plane is a specific triangulation\n "
+            + "in which there are no points in the plane which is inside the circumcircle of any\n "
+            + "triangle in the Delaunay triangulation. To avoid skinny triangles, Delaunay\n "
+            + "triangulations maximize the minimum angle of all the angles of the triangles in the\n "
+            + "triangulation. This is done by flipping edges that do not satisfy this property until\n "
+            + "no such ‘illegal’ edges remain in the triangulation.",
+            "              Underlying algorithms/data structures\n\n "
+            + "We use:\n "
+            + "✭ An ArrayList to store the stores;\n "
+            + "✭ A tree to store the triangles, each node contains the triangle’s vertex,\n "
+            + "neighbors (in case of leaf) and an ArrayList of its children.\n\n"
+            + "To implement the Delaunay triangulation, a incremental construction with search\n "
+            + "structure was used. At first, we set a big triangle on the plane which is bigger\n "
+            + "than the gameboard and then triangulate the stores one by one in input order. To\n "
+            + "transform the triangulation to a Delaunay triangulation, we implemented the edge\n "
+            + "flipping function to check if the current neighbors contain no illegal edges and,\n "
+            + "if so, flip the edges. Then we continue to check the new neighbors untill no\n "
+            + "edges need to be flipped.",
+            "\n\n After finished the Delaunay triangulation, the Voronoi diagram was implemented\n "
+                + "to partition the plane. Firstly, we calculate the Delauney center of an arbitrary\n "
+                + "leaf in the structure. We draw lines to the Delauney centers of its neighbouring\n "
+                + "triangles and incrementally use the contruction of the Voronoi diagram to calculate\n "
+                + "the area owned by each player."};
+
+        int displayText = 0;
 
         Dimension preferred = new Dimension(600, 600);
 
-        private CreditsMenu() {
+        private AlgoPanel() {
             this.setLayout(null);
             this.setPreferredSize(preferred);
 
             backButton = new JButton("Back");
-            backButton.setBounds(250, 500, 100, 40);
+            backButton.setBounds(250, 500, 100, 30);
             backButton.addActionListener(new ActionListener() {
 
                 @Override
@@ -201,6 +236,41 @@ public class VoronoiGame extends JFrame {
                 }
             });
             this.add(backButton);
+
+            nextButton = new JButton("Next >");
+            nextButton.setBounds(330, 380, 100, 30);
+            nextButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    displayText = (displayText + 1) % text.length;
+                }
+            });
+            this.add(nextButton);
+
+            prevButton = new JButton("< Previous");
+            prevButton.setBounds(170, 380, 100, 30);
+            prevButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    displayText = displayText > 0 ? (displayText - 1) : text.length - 1;
+                }
+            });
+            this.add(prevButton);
+        }
+
+        @Override
+        public void paint(Graphics gr) {
+            super.paint(gr);
+            Graphics2D g = (Graphics2D) gr;
+            Font font = new Font("Times New Roman", Font.BOLD, 15);
+            g.setFont(font);
+            int h = 0;
+            for (String s : text[displayText].split("\n")) {
+                g.drawString(s, 30, 120 + h * g.getFontMetrics().getHeight());
+                h++;
+            }
         }
 
     }
@@ -214,7 +284,7 @@ public class VoronoiGame extends JFrame {
         int bx = 150;
         int by = 150;
         int bs = 300;
-        int size = 10; //max size 30
+        int size = 15; //max size 30
         int partsize = bs / size;
 
         //hovered spot
@@ -310,16 +380,6 @@ public class VoronoiGame extends JFrame {
             g.setColor(new Color(200, 200, 0, 50));
             g.fillRect(bx - 10, by - 10, width + 20, height + 20);
 
-            //draw triangulation
-            g.setColor(new Color(0, 0, 0, 255));
-            BasicStroke stroke = new BasicStroke(3);
-            g.setStroke(stroke);
-            for (GameBoard.Triangle t : board.geTriangulation()) {
-                Polygon p = t.toPolygon();
-                g.draw(p);
-            }
-            g.setStroke(new BasicStroke());
-
             g.setColor(new Color(150, 0, 200, 150));
             Shape s = new Ellipse2D.Double(hx - 5, hy - 5, 10, 10);
             g.fill(s);
@@ -335,8 +395,9 @@ public class VoronoiGame extends JFrame {
                 g.fill(s);
             }
 
+            //draw triangulation
             g.setColor(new Color(0, 0, 255, 255));
-            GameBoard.Triangle t = board.triangulation3;
+            GameBoard.Triangle t = board.triangulation;
             if (t != null) {
 
                 //g.draw(t.toPolygon());
@@ -366,13 +427,13 @@ public class VoronoiGame extends JFrame {
                 }
             }
 
-            stroke = new BasicStroke(2);
+            BasicStroke stroke = new BasicStroke(2);
             g.setStroke(stroke);
             g.setColor(new Color(255, 0, 0, 50));
             //draw the voronoi
             area0 = 0;
             area1 = 0;
-            GameBoard.Triangle leaf = board.triangulation3;
+            GameBoard.Triangle leaf = board.triangulation;
             if (leaf != null) {
                 while (!leaf.isLeaf()) {
                     leaf = leaf.children.get(0);
@@ -383,6 +444,7 @@ public class VoronoiGame extends JFrame {
 
                 todo.add(leaf);
 
+                //constructing and drawing voronoi diagram
                 while (!todo.isEmpty()) {
                     GameBoard.Triangle tr = todo.get(0);
                     //System.out.println(tr);
@@ -391,6 +453,7 @@ public class VoronoiGame extends JFrame {
                     Store vor = board.findCenter(tr);
                     Store vor0 = null, vor1 = null, vor2 = null;
                     Store vor0a = null, vor1a = null, vor2a = null;
+                    g.setColor(new Color(0, 0, 0, 60));
                     if (tr.n0 != null) {
                         vor0 = board.findCenter(tr.n0);
                         translateVoronoi(vor0, vor);
@@ -425,7 +488,7 @@ public class VoronoiGame extends JFrame {
 //                    if ((vor0 != null && vor0.x > bx + bs) || (vor1 != null && vor1.x > bx + bs) || (vor2 != null && vor2.x > bx + bs)) {
 //                        System.out.println("voru problem!");
 //                    }
-                    //areas
+                    //areas (and filling with colour!)
                     if (tr.s0.owner == 0) {
                         g.setColor(new Color(255, 0, 0, 50));
                         if (vor0 != null) {
@@ -541,32 +604,6 @@ public class VoronoiGame extends JFrame {
             if (s.x < bx || s.x > bx + bs) {
                 s = null;
             }
-
-//            double a = (ref.y - s.y) / (ref.x - s.x);
-//
-//            if (s.y < by) {
-//                double dx = -(by - s.y) / a;
-//                s.y = by;
-//                s.x += dx;
-//            }
-//            if (s.y > by + bs) {
-//                double dx = (s.y - (by + bs)) / a;
-//                s.y = by + bs;
-//                s.y += dx;
-//            }
-//
-//            if (s.x < bx || s.x > bx + bs) {
-//                //not in the playing field
-//                s = null;
-//            }
-//            if (s.y < by) {
-//                s.x = s.x + a * (by - s.y);
-//                s.y = by;
-//            }
-//            if (s.y > by + bs) {
-//                s.x = s.x + a * ((by + bs) - s.y);
-//                s.y = (by + bs);
-//            }
         }
 
         private void translateVoronoi(Store s, Store ref) {
@@ -574,143 +611,6 @@ public class VoronoiGame extends JFrame {
             translateYVoronoi(s, ref);
         }
 
-        private ArrayList<Point> calculatePolygon(Store s) {
-            Polygon result = new Polygon();
-            ArrayList<Line2D.Double> lines = new ArrayList<>();
-
-            ArrayList<GameBoard.Edge> consideredEdges = new ArrayList();
-
-            //find all lines
-            for (GameBoard.Edge e : board.findEdgesOfStore(s)) {
-                //do not consider twins again!
-                if (!consideredEdges.contains(e)) {
-                    if (e.twin != null) {
-                        consideredEdges.add(e.twin);
-                    }
-
-                    GameBoard.Edge en = e.next;
-                    double xcc = (e.s1.x + e.s2.x) / 2;
-                    double ycc = (e.s1.y + e.s2.y) / 2;
-                    double ac;
-                    double xcn = (en.s1.x + en.s2.x) / 2;
-                    double ycn = (en.s1.y + en.s2.y) / 2;
-                    double an;
-
-                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y && en.s2.x != en.s1.x && en.s2.y != en.s1.y) {
-                        ac = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
-                        ac = -1.0f / ac; //perpendicular
-                        double bc = ycc - ac * xcc;
-
-                    } else if (e.s2.y == e.s1.y) {
-
-                    } else if (e.s2.x == e.s1.x) {
-
-                    }
-
-                }
-            }
-
-            if (lines.size() == 0) {
-                result.addPoint(0, 0);
-                result.addPoint(1, 1);
-                result.addPoint(0, 1);
-            }
-            for (Line2D.Double l : lines) {
-                //result.addPoint(0, 0);
-                result.addPoint((int) l.x1, (int) l.y1);
-                result.addPoint((int) l.x2, (int) l.y2);
-            }
-
-//            System.out.println(lines.get(0).x1);
-//            System.out.println(lines.get(0).y1);
-//            System.out.println(lines.get(0).x2);
-//            System.out.println(lines.get(0).y2);
-            if (lines.size() > 0) {
-                //return lines.get(0);
-            } else {
-                //return null;
-            }
-
-            return null;
-        }
-
-//        private ArrayList<Line2D.Float> calculatePolygon(Store s) {
-//            Polygon result = new Polygon();
-//            ArrayList<Line2D.Float> lines = new ArrayList<>();
-//
-//            ArrayList<GameBoard.Edge> consideredEdges = new ArrayList();
-//
-//            //find all lines
-//            for (GameBoard.Edge e : board.findEdgesOfStore(s)) {
-//                //do not consider twins again!
-//                if (!consideredEdges.contains(e)) {
-//                    if (e.twin != null) {
-//                        consideredEdges.add(e.twin);
-//                    }
-//
-//                    float xc = (e.s1.x + e.s2.x) / 2;
-//                    float yc = (e.s1.y + e.s2.y) / 2;
-//                    float a;
-//
-//                    if (e.s2.x != e.s1.x && e.s2.y != e.s1.y) {
-//                        a = (e.s2.y - e.s1.y) / (e.s2.x - e.s1.x);
-//                        a = -1.0f / a; //perpendicular
-//                        float b = yc - a * xc;
-//                        //x,y = 150 and 450
-//
-//                        //determine where it hits borders of the board
-//                        Point pl = null, pr = null, pt = null, pb = null;
-//
-//                        float yhit_left = a * 150 + b;
-//                        float yhit_right = a * 450 + b;
-//                        float xhit_top = (150 - b) / a;
-//                        float xhit_bot = (450 - b) / a;
-//                        if (150 <= yhit_left && yhit_left <= 450) {
-//                            pl = new Point(150, (int) yhit_left);
-//                        }
-//                        if (150 <= yhit_right && yhit_right <= 450) {
-//                            pr = new Point(450, (int) yhit_right);
-//                        }
-//                        if (150 <= xhit_top && xhit_top <= 450) {
-//                            pt = new Point((int) xhit_top, 150);
-//                        }
-//                        if (150 <= xhit_bot && xhit_bot <= 450) {
-//                            pb = new Point((int) xhit_bot, 450);
-//                        }
-//                        Line2D.Float l = findLine(pl, pr, pt, pb);
-//                        lines.add(l);
-//                    } else if (e.s2.y == e.s1.y) {
-//                        lines.add(new Line2D.Float(new Point((int) xc, 150), new Point((int) xc, 450)));
-//                    } else if (e.s2.x == e.s1.x) {
-//                        lines.add(new Line2D.Float(new Point(150, (int) yc), new Point(450, (int) yc)));
-//                    }
-//
-//                }
-//            }
-//
-//            if (lines.size() == 0) {
-//                result.addPoint(0, 0);
-//                result.addPoint(1, 1);
-//                result.addPoint(0, 1);
-//            }
-//            for (Line2D.Float l : lines) {
-//                //result.addPoint(0, 0);
-//                result.addPoint((int) l.x1, (int) l.y1);
-//                result.addPoint((int) l.x2, (int) l.y2);
-//            }
-//
-////            System.out.println(lines.get(0).x1);
-////            System.out.println(lines.get(0).y1);
-////            System.out.println(lines.get(0).x2);
-////            System.out.println(lines.get(0).y2);
-//            if (lines.size() > 0) {
-//                //return lines.get(0);
-//            } else {
-//                //return null;
-//            }
-//
-//            return lines;
-//        }
         @Override
         public void mouseDragged(MouseEvent e) {
             //do nothing
@@ -766,26 +666,6 @@ public class VoronoiGame extends JFrame {
         @Override
         public void mouseExited(MouseEvent e) {
             //do nothing
-        }
-
-        private Line2D.Double findLine(Point pl, Point pr, Point pt, Point pb) {
-            if (pl != null) {
-                if (pr != null) {
-                    return new Line2D.Double(pl, pr);
-                } else if (pt != null) {
-                    return new Line2D.Double(pl, pt);
-                } else {
-                    return new Line2D.Double(pl, pb);
-                }
-            } else if (pr != null) {
-                if (pt != null) {
-                    return new Line2D.Double(pr, pt);
-                } else {
-                    return new Line2D.Double(pr, pb);
-                }
-            } else {
-                return new Line2D.Double(pt, pb);
-            }
         }
 
     }
