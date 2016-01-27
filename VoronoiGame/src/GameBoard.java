@@ -707,28 +707,6 @@ public class GameBoard {
         return 0;
     }
 
-    private boolean overlaps(Triangle t1, Triangle t2) {
-        Line2D.Double line0 = new Line2D.Double(t1.s0.x, t1.s0.y, t1.s1.x, t1.s1.y);
-        Line2D.Double line1 = new Line2D.Double(t1.s1.x, t1.s1.y, t1.s2.x, t1.s2.y);
-        Line2D.Double line2 = new Line2D.Double(t1.s2.x, t1.s2.y, t1.s0.x, t1.s0.y);
-
-//        if ((above(t2.s0, line0) * above(t2.s1, line0) == -1) || (above(t2.s1, line0) * above(t2.s2, line0) == -1) || (above(t2.s2, line0) * above(t2.s0, line0) == -1)
-//                || (above(t2.s0, line1) * above(t2.s1, line1) == -1) || (above(t2.s1, line1) * above(t2.s2, line1) != 0) || (above(t2.s2, line1) * above(t2.s0, line1) == -1)
-//                || (above(t2.s0, line2) * above(t2.s1, line2) == -1) || (above(t2.s1, line2) * above(t2.s2, line2) == -1) || (above(t2.s2, line2) * above(t2.s0, line2) == -1)) {
-//            return true;
-//        }
-        if (intersects(t2.s0, t2.s1, line0) || intersects(t2.s1, t2.s2, line0) || intersects(t2.s2, t2.s0, line0)
-                || intersects(t2.s0, t2.s1, line1) || intersects(t2.s1, t2.s2, line1) || intersects(t2.s2, t2.s0, line1)
-                || intersects(t2.s0, t2.s1, line2) || intersects(t2.s1, t2.s2, line2) || intersects(t2.s2, t2.s0, line2)) {
-            return true;
-        }
-
-        return false;
-//        if (pointInTriangle(t1.s0, t2) || pointInTriangle(t1.s1, t2) || pointInTriangle(t1.s2, t2) ) {
-//            return true;
-//        }
-//        return false;
-    }
 
     //edges between stores
     public class Edge {
