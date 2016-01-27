@@ -468,6 +468,34 @@ public class VoronoiGame extends JFrame {
                 HashSet<Triangle> done = new HashSet<>();
                 HashMap<Store, ArrayList<Store>> polygonmap = new HashMap<>(32);
 
+                board.getStores().sort((Store s1, Store s2) -> (int) ((s1.x - bx) * (s1.x - bx) + (s1.y - by) * (s1.y - by) - ((s2.x - bx) * (s2.x - bx) + (s2.y - by) * (s2.y - by))));
+                if (!polygonmap.containsKey(board.getStores().get(0))) {
+                    polygonmap.put(board.getStores().get(0), new ArrayList<>());
+                }
+                polygonmap.get(board.getStores().get(0)).add(new Store(bx+0.001d, by+0.001d, -1));
+
+                
+                board.getStores().sort((Store s1, Store s2) -> (int) ((s1.x - (bx + bs)) * (s1.x - (bx + bs)) + (s1.y - by) * (s1.y - by) - ((s2.x - (bx + bs)) * (s2.x - (bx + bs)) + (s2.y - by) * (s2.y - by))));
+                if (!polygonmap.containsKey(board.getStores().get(0))) {
+                    polygonmap.put(board.getStores().get(0), new ArrayList<>());
+                }
+                polygonmap.get(board.getStores().get(0)).add(new Store((bx + bs)-0.001d, by+0.001d, -1));
+                
+                
+                board.getStores().sort((Store s1, Store s2) -> (int) ((s1.x - (bx + bs)) * (s1.x - (bx + bs)) + (s1.y - (by + bs)) * (s1.y - (by + bs)) - ((s2.x - (bx + bs)) * (s2.x - (bx + bs)) + (s2.y - (by + bs)) * (s2.y - (by + bs)))));
+                if (!polygonmap.containsKey(board.getStores().get(0))) {
+                    polygonmap.put(board.getStores().get(0), new ArrayList<>());
+                }
+                polygonmap.get(board.getStores().get(0)).add(new Store((bx + bs)-0.005d, (by + bs)-.005d, -1));
+                
+                
+                board.getStores().sort((Store s1, Store s2) -> (int) ((s1.x - bx) * (s1.x - bx) + (s1.y - (by + bs)) * (s1.y - (by + bs)) - ((s2.x - bx) * (s2.x - bx) + (s2.y - (by + bs)) * (s2.y - (by + bs)))));
+                if (!polygonmap.containsKey(board.getStores().get(0))) {
+                    polygonmap.put(board.getStores().get(0), new ArrayList<>());
+                }
+                polygonmap.get(board.getStores().get(0)).add(new Store(bx+0.005d, (by + bs)-0.005d, -1));
+                
+                
                 todo.add(leaf);
 
                 //constructing and drawing voronoi diagram
@@ -769,7 +797,7 @@ public class VoronoiGame extends JFrame {
                     if (ss.owner != -1) {
                         g.setColor(colors[ss.owner]);
                         ArrayList<Store> slist = polygonmap.get(ss);
-                        slist.sort((Store s1, Store s2) -> (int) ((s1.x * s1.y) - (s2.x * s2.y)));
+                        slist.sort((Store s1, Store s2) -> (int) ((s1.x * s1.x * s1.y) - (s2.x * s2.x * s2.y)));
 
                         //remove duplicate vertices
                         Store prev = null;
@@ -782,7 +810,7 @@ public class VoronoiGame extends JFrame {
                             }
                             prev = now;
                         }
-                        slist.sort((Store s1, Store s2) -> (int) (s2.y - s1.y));
+                        slist.sort((Store s1, Store s2) -> (int) (s1.y - s2.y));
 
 //                        if (slist.size() < 3) {
 //                            System.out.println("ERROR LIST SIZE");
