@@ -164,7 +164,10 @@ public class VoronoiGame extends JFrame {
             + "The goal of the game is to conquer more surface area than the opponent:\n "
             + "clients are indifferent and go to the nearest store available.\n "
             + "Both players are allowed to place 8 stores on the playing field, after\n "
-            + "which the game ends."};
+            + "which the game ends.\n\n\n"
+                + "Game by:\n"
+                + "Ruben Jonk, 0658849\n"
+                + "Yang Song,  0980854"};
 
         Dimension preferred = new Dimension(600, 600);
 
