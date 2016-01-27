@@ -151,21 +151,21 @@ public class GameBoard {
 //                            }
 //                        }
 //                    }
-                    if (isLocalDelaunay(f, f.n0)) {
+                    if (!isLocalDelaunay(f, f.n0)) {
                         flip(f, f.n0);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
                                 flipping.push(fa);
                             }
                         }
-                    } else if (isLocalDelaunay(f, f.n1)) {
+                    } else if (!isLocalDelaunay(f, f.n1)) {
                         flip(f, f.n1);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
                                 flipping.push(fa);
                             }
                         }
-                    } else if (isLocalDelaunay(f, f.n0)) {
+                    } else if (!isLocalDelaunay(f, f.n0)) {
                         flip(f, f.n2);
                         for (Triangle fa : f.children) {
                             if (!overlapStores(fa, b)) {
@@ -507,22 +507,40 @@ public class GameBoard {
 
     public boolean isLocalDelaunay(Triangle t1, Triangle t2) {
         if (t1 == null || t2 == null) {
-            return false;
+            return true;
         }
 
         Edge e = findCommonEdge(t1, t2);
         Edge e0 = findMissingEdge(t1, t2);
+        
+        
 
         if (e == null) {
+            System.out.println("Null??");
             return true;
         }
+        
+//        int c = 0;
+//        if (storeInTriangle(e.s1,triangulation)) c++;
+//        if (storeInTriangle(e.s2,triangulation)) c++;
+//        if (storeInTriangle(e0.s1,triangulation)) c++;
+//        if (storeInTriangle(e0.s2,triangulation)) c++;
+//        
+//        if (c == 1 && (storeInTriangle(e.s1,triangulation)||storeInTriangle(e.s2,triangulation))) {
+//            System.out.println("OKAY");
+//            return false;
+//        }
+//        if (c == 1 && (storeInTriangle(e0.s1,triangulation)||storeInTriangle(e0.s2,triangulation))) {
+//            //return true;
+//        }
+        
 
         Store p = e.s1;
         Store q = e.s2;
         Store r = e0.s1;
         Store s = e0.s2;
 
-        return (signDet3(p, q, r) * signDet4(p, q, r, s) > 0);
+        return !(signDet3(p, q, r) * signDet4(p, q, r, s) > 0);
 
     }
 
